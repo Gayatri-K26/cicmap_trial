@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<courseinfo>
+<course code="CS 480">
+<![CDATA[
+<div class="courseblock">
+<div class="courseblocktitle">
+<div class="noindent coursecode">CS&#160;480</div>
+<div class="noindent coursetitle"><strong>Introduction to Artificial Intelligence</strong></div>
+</div>
+<div class="courseblockdesc"><p class="noindent">
+Introduction to computational methods for intelligent control of autonomous agents, and the use of programming paradigms that support development of flexible and reactive systems. These include heuristic search, knowledge representation, constraint satisfaction, probabilistic reasoning, decision-theoretic control, and sensor interpretation. Particular focus will be places on real-world application of the material.
+</p>
+</div>
+<div class="noindent courseblockattr">
+<strong>Prerequisite(s):</strong> (<a href="/search/?P=CS%20331" title="CS&#160;331" class="bubblelink code" onclick="return showCourse(this, 'CS 331');">CS&#160;331</a> or <a href="/search/?P=CS%20401" title="CS&#160;401" class="bubblelink code" onclick="return showCourse(this, 'CS 401');">CS&#160;401</a> or <a href="/search/?P=CSSP%20401" title="CSSP&#160;401" class="bubblelink code" onclick="return showCourse(this, 'CSSP 401');">CSSP&#160;401</a> with min. grade of S) and (<a href="/search/?P=MATH%20474" title="MATH&#160;474" class="bubblelink code" onclick="return showCourse(this, 'MATH 474');">MATH&#160;474</a>* or <a href="/search/?P=MATH%20475" title="MATH&#160;475" class="bubblelink code" onclick="return showCourse(this, 'MATH 475');">MATH&#160;475</a>*), An asterisk (*) designates a course which may be taken concurrently.
+</div><div class="noindent courseblockattr hours">
+<span><strong>Lecture:</strong> 3</span> <span><strong>Lab:</strong> 0</span> <span><strong>Credits:</strong> 3</span>
+</div>
+<div class="noindent courseblockattr">
+<strong>Satisfies:</strong> CS Technical Elective (T)
+</div>
+</div>
+]]>
+</course>
+</courseinfo>

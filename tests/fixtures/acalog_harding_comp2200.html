@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>COMP 2200 - Introduction to Machine Learning - </title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="shortcut icon" href="//acalog-clients.s3.amazonaws.com/production/hardingu/img/favicon/favicon.ico" />
+<link href="//acalog-clients.s3.amazonaws.com/production/hardingu/css/gateway/user-styles.css" rel="stylesheet" type="text/css">
+<link href="css/public_custom.php" rel="stylesheet" type="text/css">
+<link href="global_styles.css?v=01252018" rel="stylesheet" type="text/css">
+		<!-- Cache-busting string (deploy date) added to asset URLS -->
+		<script src="js/jquery.js?v=01252018" type="text/javascript" integrity="sha384-Jw7oPgh1QVMkLkgcwNwaftGwTRyvqNATr31v+ibxI2j+iDl6DBuAetkzsVDzcarO"></script>
+		<script src="js/Tooltip.js?v=01252018" type="text/javascript" integrity="sha384-UMB1Hx/m9CdDRUtWmG6bt7gOgctm6YWwJQ8uukCii62Vh72yo8uQO0LoUIAZWBM2"></script>
+ 		<script src="javascripts.js?v=02232018" type="text/javascript" integrity="sha384-ooicF5pDDd8rcvSonkcaDMatceDtwsF5VHaGB/UPjdx3VFdceJUWM0/iGkda12BS"></script>
+		<script src="js/smlinks.js?v=01252018" type="text/javascript" integrity="sha384-8w7FIGtEuZL0dUz6XQVVDpBI6As5YXPwao6YqF4Jt2cSrgykXvBn8xAxo+vKlpBf"></script>
+			<script src="/js/highlight.js?v=01252018" type="text/javascript" integrity="sha384-/N6E97UUUZqqm9M4Fk0tseDccUbVKSjriIyzH2cxQU/cfGbheI1tQvAfVo4yBbsp"></script>
+<noscript><p><span class="error">Javascript is currently not supported, or is disabled by this browser. Please enable Javascript for full functionality.</span></p></noscript>
+<script type="text/javascript">var gatewayFeatureSearchBar = true; var gatewayFeatureToolbarText = false; var gatewayFeatureBackToTopText = false;</script>
+<link type="text/css" rel="stylesheet" href="//acalog-clients.s3.amazonaws.com/global/css/gateway-styles-reset.css" />
+<link type="text/css" rel="stylesheet" href="//acalog-clients.s3.amazonaws.com/global/css/gateway-styles-nojs.css" id="gateway-styles-nojs" />
+<link type="text/css" rel="stylesheet" href="//acalog-clients.s3.amazonaws.com/production/hardingu/css/gateway/gateway-styles.css?v=0410202621122" />
+<script type="text/javascript">document.getElementById("gateway-styles-nojs").parentNode.removeChild(document.getElementById("gateway-styles-nojs"));</script>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script type="text/javascript" src="//acalog-clients.s3.amazonaws.com/global/js/jquery.browser.js"></script>
+<script type="text/javascript" src="//acalog-clients.s3.amazonaws.com/global/js/gateway-javascript.js"></script>
+<!--[if lte IE 8]><script type="text/javascript" src="//acalog-clients.s3.amazonaws.com/global/js/select-fix.js"></script><![endif]-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-migrate-3.4.1.min.js" crossorigin="anonymous"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.12/css/select2.min.css" rel="stylesheet" integrity="sha384-KZO2FRYNmIHerhfYMjCIUaJeGBRXP7CN24SiNSG+wdDzgwvxWbl16wMVtWiJTcMt" crossorigin="anonymous" />
+
+<!-- Begin Responsive -->
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<script src="https://kit.fontawesome.com/e35e04f508.js" integrity="sha384-R6VdFS8kVoq95OAh0ovy8RJ/16mag2fYdzr7zVL0mCTflvoedXn1ImqSlT8Es4SM" crossorigin="anonymous"></script>
+<script src="/mobile-js.js" integrity="sha384-8c7xrierIq1kMm5dyQ8AbZgXFUK0RP5zv2b5Wal7ERFl9XL9jGOU14nsrTHaUr2Q"></script>
+<link href="/mobile-styles.css" rel="stylesheet" type="text/css" integrity="sha384-x48QjmWDEbnCCjvlJy7x37BaGkf6QNekrKYReCsO6qL8J6pFkAnxVgcPsjPHGxCu" />
+<!-- End Responsive -->
+
+</head>
+
+<body>
+<!-- Skip to Navigation -->
+<nav id="skip" aria-label="Skip to Main Content">
+	<a href="#course_preview_title" class="skip-nav">Skip to Content</a>
+</nav>
+<table class="toplevel table_default">
+  <tr>
+    <td colspan="2" class="block_n2_and_content" id="acalog-header"><header role="banner"><div id="acalog-client-javascript" class="acalog-custom">
+<script src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/back-to-top.js"></script>
+<script type="application/ld+json">
+    {
+        "@context": "https://www.schema.org",
+        "@type": "CollegeOrUniversity",
+        "name": "Harding University",
+        "description": "At Harding University, you'll have the opportunity to be transformed academically, relationally and spiritually so you're prepared to change the world.",
+        "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "915 E. Market Ave.",
+            "addressLocality": "Searcy",
+            "addressRegion": "AR",
+            "addressCountry": "US",
+            "postalCode": "72149"
+        },
+        "hasMap": "https://maps.app.goo.gl/ZD5wF4pMoAtu8WE49",
+        "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": 35.24783438157502,
+            "longitude": -91.72618844233025
+        },
+        "url": "https://www.harding.edu",
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "501-279-4000"
+        },
+        "foundingDate": "1924",
+        "logo": "https://www.harding.edu/about/offices-departments/ucm/assets/images/logos/harding_picture_placement.jpg",
+        "photo": "https://www.harding.edu/_files/img/8-3_wide/8-3_2015-104-8533.jpg",
+        "nonProfitStatus": "https://schema.org/Nonprofit501c3",
+        "employee": {
+            "@type": "Person",
+            "givenName": "Michael",
+            "familyName": "Williams",
+            "honorificSuffix": "PhD",
+            "jobTitle": "President",
+            "url": "https://www.harding.edu/about/offices-departments/president/"
+        },
+        "tourBookingPage": "https://www.harding.edu/admissions/visit/",
+        "hasCredential": [{
+                "@type": "EducationalOccupationalCredential",
+                "credentialCategory": "Accreditation",
+                "name": "Higher Learning Commission Accreditation",
+                "recognizedBy": {
+                    "@type": "EducationalOrganization",
+                    "name": "Higher Learning Commission",
+                    "url": "https://www.hlcommission.org/",
+                    "sameAs": "https://www.wikidata.org/wiki/Q7739633"
+                },
+                "validFor": "2025/2035",
+                "url": "https://www.hlcommission.org/institution/1021/"
+            },
+            {
+                "@type": "EducationalOccupationalCredential",
+                "credentialCategory": "Accreditation",
+                "name": "Participating Institution in the National Council for State Authorization Reciprocity Agreements",
+                "recognizedBy": {
+                    "@type": "EducationalOrganization",
+                    "name": "National Council for State Authorization Reciprocity Agreements",
+                    "url": "https://nc-sara.org/"
+                }
+            },
+            {
+                "@type": "EducationalOccupationalCredential",
+                "credentialCategory": "Accreditation",
+                "name": "Participating Institution in the State Authorization Reciprocity Agreement",
+                "recognizedBy": {
+                    "@type": "GovernmentOrganization",
+                    "name": "Arkansas Division of Higher Education",
+                    "url": "https://adhe.edu/"
+                }
+            }
+        ],
+        "potentialAction": {
+            "@type": "ApplyAction",
+            "target": "https://www.harding.edu/admissions/apply/index"
+        },
+        "hasOfferCatalog": {
+            "@type": ["OfferCatalog", "EducationalOccupationalProgram"],
+            "name": "Degrees and Majors",
+            "description": "A full list of the graduate and undergraduate degree programs and majors offered at Harding University.",
+            "url": "https://www.harding.edu/academics/degrees-majors/"
+        }
+    }</script>
+<script>
+        (function() {
+                var scrollDiv = document.createElement("div");
+                scrollDiv.style.width = "100px";
+                scrollDiv.style.height = "100px";
+                scrollDiv.style.overflowY = "scroll";
+                scrollDiv.style.position = "absolute";
+                scrollDiv.style.top = "-9999px";
+                document.body.appendChild(scrollDiv);
+
+                var scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+                document.body.removeChild(scrollDiv);
+
+                document.documentElement.style.setProperty("--scrollbar-width", scrollbarWidth + "px");
+        })();
+</script>
+<script>
+        jQuery(document).ready(function($) {
+                if ($('#gateway-page').length) {
+                        $(function() {
+                                var $win = $(window);
+                                var $header = $('#header');
+                                var $container = $('<div id="header-container"><\/div>');
+                                $header.wrap($container);
+                                var $hero = $('.hero');
+
+                                if (!$header.length || !$container.length) return;
+
+                                // Insert placeholder to avoid layout shift when header goes fixed
+                                var $placeholder = $('#header-placeholder');
+                                if (!$placeholder.length) {
+                                        $placeholder = $('<div id="header-placeholder"><\/div>').insertAfter($container);
+                                }
+
+                                var headerTop = 0;
+                                var headerHeight = 0;
+                                var heroBottom = null;
+
+                                // Cache layout metrics
+                                function updateMetrics() {
+                                        headerTop = $container.offset().top;
+                                        headerHeight = $header.outerHeight();
+
+                                        if ($hero.length === 1) {
+                                                heroBottom = $hero.offset().top + $hero.outerHeight() - headerHeight * 2;
+                                        } else {
+                                                heroBottom = null;
+                                        }
+                                }
+
+                                function applySticky(scrollTop) {
+                                        if (scrollTop >= headerTop) {
+                                                if (!$header.hasClass('is-fixed')) {
+                                                        $header.addClass('is-fixed');
+                                                        $placeholder.height(headerHeight);
+                                                }
+                                        } else {
+                                                if ($header.hasClass('is-fixed')) {
+                                                        $header.removeClass('is-fixed');
+                                                        $placeholder.height(0);
+                                                }
+                                        }
+                                }
+
+                                function applyHeroShrink(scrollTop) {
+                                        if (heroBottom == null) {
+                                                // No hero (e.g. blog pages) – ensure header is in default state
+                                                $header.removeClass('scroll');
+                                                return;
+                                        }
+
+                                        if (scrollTop > heroBottom) {
+                                                $header.addClass('scroll');
+                                        } else {
+                                                $header.removeClass('scroll');
+                                        }
+                                }
+
+                                // Use rAF to smooth scroll handling and avoid layout thrashing
+                                var ticking = false;
+                                var lastScrollTop = 0;
+
+                                function onScrollRaw() {
+                                        lastScrollTop = $win.scrollTop();
+
+                                        if (!ticking) {
+                                                window.requestAnimationFrame(function() {
+                                                        applySticky(lastScrollTop);
+                                                        applyHeroShrink(lastScrollTop);
+                                                        ticking = false;
+                                                });
+                                                ticking = true;
+                                        }
+                                }
+
+                                // Initial setup after DOM is ready
+                                updateMetrics();
+                                onScrollRaw(); // run once at load
+
+                                // Events
+                                $win.on('scroll', onScrollRaw);
+                                $win.on('resize', function() {
+                                        updateMetrics();
+                                        // Re-run logic with latest metrics and current scroll pos
+                                        lastScrollTop = $win.scrollTop();
+                                        applySticky(lastScrollTop);
+                                        applyHeroShrink(lastScrollTop);
+                                });
+                        });
+                }
+        });
+</script>
+</div>
+<!-- End Client Javascript -->
+
+<!-- Start Client Header -->
+<div id="acalog-client-header" class="acalog-custom">
+    <div id="header" class="scroll">
+        <div class="header-top">
+            <form class="hu-search-form search">
+                <input placeholder="Search Harding" type="text"> <input type="submit" value="Search"> <button class="closex"><img class="search-close" src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/x-close.svg"></button>
+            </form><a href="https://www.harding.edu"><img alt="Harding Wordmark" class="logo" src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/wordmark_black.png"></a>
+            <div class="nav-links">
+                <a class="nav-a link" href="https://www.harding.edu/academics">Academics</a> <a class="nav-a link" href="https://www.harding.edu/admissions">Admissions and Aid</a> <a class="nav-a link" href="https://www.harding.edu/life-at-harding">Life at Harding</a> <a class="nav-a link" href="https://www.harding.edu/about">About</a>
+            </div>
+            <div class="subnav">
+                <a href="https://www.harding.edu/admissions/request-info/index">Request Information</a> <a href="https://www.harding.edu/admissions/visit/index">Schedule a Visit</a> <a href="https://www.harding.edu/admissions/apply/index">Apply</a>
+            </div>
+            <div class="ctalinks">
+                <a class="gift cta" href="https://www.harding.edu/give/index"><span><img src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/gift.svg"></span> Make a Gift</a>
+                <div class="grey-bar"></div><button aria-controls="info-for-links" aria-expanded="false" class="info cta nav-a"><span><img src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/info.svg"></span> Information for <span class="arrow"><img src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/down.svg"></span></button>
+                <div class="nav-dropdown dropped" id="info-for-links" style="display: none; left: 156.975px;">
+                    <a href="https://www.harding.edu/academics/undergraduates/index">Undergraduates</a> <a href="https://www.harding.edu/academics/graduate-professional/index">Graduates</a> <a href="https://www.harding.edu/parents/index">Parents</a> <a href="https://www.harding.edu/alumni/index">Alumni</a> <a href="https://www.harding.edu/give/index">Donors</a>
+                </div>
+                <div class="grey-bar"></div><button aria-has-popup="dialogue" class="search"><span><img src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/search.svg"></span> Search</button>
+            </div>
+        </div>
+        <div class="header-nav">
+            <button aria-controls="academics-dropdown" aria-expanded="false" class="nav-a">Academics</button>
+            <div class="nav-dropdown nav-d dropped" id="academics-dropdown" style="display: none; left: 223.725px;">
+                <a href="https://www.harding.edu/academics/index">Overview</a> <a href="https://www.harding.edu/academics/degrees-majors/index">Degrees and Majors</a> <a href="https://www.harding.edu/academics/graduate-professional/index">Graduate and Professional</a> <a href="https://www.harding.edu/academics/study-abroad/index">Study Abroad</a> <a href="https://www.harding.edu/academics/online/index">Online Programs</a> <a href="https://catalog.harding.edu/">Catalog</a>
+            </div><button aria-controls="admissions-dropdown" aria-expanded="false" class="nav-a">Admissions and Aid</button>
+            <div class="nav-dropdown nav-d dropped" id="admissions-dropdown" style="display: none; left: 444.825px;">
+                <a href="https://www.harding.edu/admissions/index">Overview</a> <a href="https://www.harding.edu/admissions/apply/index">How to Apply</a> <a href="https://www.harding.edu/admissions/cost/index">Scholarships and Financial Aid</a> <a href="https://www.harding.edu/admissions/dual-enrollment/index">Dual Enrollment</a> <a href="https://www.harding.edu/admissions/visit/index">Visit Campus</a> <a href="https://www.harding.edu/admissions/request-info/index">Request Information</a> <a href="https://www.harding.edu/admissions/contact/index">Admissions Counselors</a>
+            </div><button aria-controls="life-at-harding-dropdown" aria-expanded="false" class="nav-a">Life At Harding</button>
+            <div class="nav-dropdown nav-d dropped" id="life-at-harding-dropdown" style="display: none; left: 767.838px;">
+                <a href="https://www.harding.edu/life-at-harding/index">Overview</a> <a href="https://www.harding.edu/life-at-harding/arc/index">Academic Resource Center</a> <a href="https://www.harding.edu/life-at-harding/health-wellness/index">Health and Wellness</a> <a href="https://www.harding.edu/life-at-harding/student-support/index">Student Support</a> <a href="https://www.harding.edu/life-at-harding/campus-life/index">Campus Life</a> <a href="https://www.harding.edu/life-at-harding/campus-safety/index">Campus Safety</a> <a href="https://www.harding.edu/life-at-harding/athletics/index">Athletics</a>
+            </div><button aria-controls="about-dropdown" aria-expanded="false" class="nav-a">About</button>
+            <div class="nav-dropdown nav-d dropped" id="about-dropdown" style="display: none; left: 1046.19px;">
+                <a href="https://www.harding.edu/about/index">Overview</a> <a href="https://www.harding.edu/about/mission/index">Mission</a> <a href="https://www.harding.edu/about/ministries/index">Ministries</a> <a href="https://www.harding.edu/about/community/index">Community</a> <a href="https://www.harding.edu/about/history/index">History</a> <a href="https://www.harding.edu/about/calendar/index">Calendar</a> <a href="https://www.harding.edu/about/leadership/index">Leadership</a> <a href="https://www.harding.edu/about/offices-departments/index">Offices and Departments</a> <a href="https://www.harding.edu/about/diversity/index">Diversity</a>
+            </div>
+        </div>
+    </div>
+    <div id="mobile-header">
+        <div class="top">
+            <div class="mobile-header-left">
+                <a href="/"><img alt="Harding Wordmark" class="logo" src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/wordmark_black.png"></a>
+            </div><button aria-controls="mobile-header-drop" aria-expanded="false" class="mobile-header-right"><img class="menu-button menu" src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/menu.svg"> <img class="menu-button x-button" src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/x-white.svg"></button>
+        </div>
+    </div>
+    <div id="mobile-header-drop">
+        <div class="m-header-nav">
+            <div class="m-nav-a">
+                <div class="adiv">
+                    Academics
+                </div><img class="accordion-icon" src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/add-plus.svg">
+            </div>
+            <div class="m-nav-dropdown nav-d" style="display: none;">
+                <a href="https://www.harding.edu/academics/index">Overview</a> <a href="https://www.harding.edu/academics/degrees-majors/index">Degrees and Majors</a> <a href="https://www.harding.edu/academics/graduate-professional/index">Graduate and Professional</a> <a href="https://www.harding.edu/academics/study-abroad/index">Study Abroad</a> <a href="https://www.harding.edu/academics/online/index">Online Programs</a> <a href="https://catalog.harding.edu/">Catalog</a>
+            </div>
+            <div class="m-nav-a">
+                <div class="adiv">
+                    Admissions and Aid
+                </div><img class="accordion-icon" src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/add-plus.svg">
+            </div>
+            <div class="m-nav-dropdown nav-d" style="display: none;">
+                <a href="https://www.harding.edu/admissions/index">Overview</a> <a href="https://www.harding.edu/admissions/apply/index">How to Apply</a> <a href="https://www.harding.edu/admissions/cost/index">Scholarships and Financial Aid</a> <a href="https://www.harding.edu/admissions/dual-enrollment/index">Dual Enrollment</a> <a href="https://www.harding.edu/admissions/visit/index">Visit Campus</a> <a href="https://www.harding.edu/admissions/request-info/index">Request Information</a> <a href="https://www.harding.edu/admissions/contact/index">Admissions Counselors</a>
+            </div>
+            <div class="m-nav-a">
+                <div class="adiv">
+                    Life At Harding
+                </div><img class="accordion-icon" src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/add-plus.svg">
+            </div>
+            <div class="m-nav-dropdown nav-d" style="display: none;">
+                <a href="https://www.harding.edu/life-at-harding/index">Overview</a> <a href="https://www.harding.edu/life-at-harding/arc/index">Academic Resource Center</a> <a href="https://www.harding.edu/life-at-harding/health-wellness/index">Health and Wellness</a> <a href="https://www.harding.edu/life-at-harding/student-support/index">Student Support</a> <a href="https://www.harding.edu/life-at-harding/campus-life/index">Campus Life</a> <a href="https://www.harding.edu/life-at-harding/campus-safety/index">Campus Safety</a> <a href="https://www.harding.edu/life-at-harding/athletics/index">Athletics</a>
+            </div>
+            <div class="m-nav-a">
+                <div class="adiv">
+                    About
+                </div><img class="accordion-icon" src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/add-plus.svg">
+            </div>
+            <div class="m-nav-dropdown nav-d" style="display: none;">
+                <a href="https://www.harding.edu/about/index">Overview</a> <a href="https://www.harding.edu/about/mission/index">Mission</a> <a href="https://www.harding.edu/about/ministries/index">Ministries</a> <a href="https://www.harding.edu/about/community/index">Community</a> <a href="https://www.harding.edu/about/history/index">History</a> <a href="https://www.harding.edu/about/calendar/index">Calendar</a> <a href="https://www.harding.edu/about/leadership/index">Leadership</a> <a href="https://www.harding.edu/about/offices-departments/index">Offices and Departments</a> <a href="https://www.harding.edu/about/diversity/index">Diversity</a>
+            </div>
+        </div>
+        <div class="bottom">
+            <div class="ctalinks">
+                <a class="gift cta" href="https://www.harding.edu/give/index"><img src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/gift.svg">Make a Gift</a> <a class="info cta nav-a" href="#"><img src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/info.svg"> Information for <img class="toflip" src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/down.svg"></a>
+                <div class="nav-dropdown2" style="display: none;">
+                    <a href="https://www.harding.edu/academics/undergraduates/index">Undergraduates</a> <a href="https://www.harding.edu/academics/graduate-professional/index">Graduates</a> <a href="https://www.harding.edu/parents/index">Parents</a> <a href="https://www.harding.edu/alumni/index">Alumni</a> <a href="https://www.harding.edu/give/index">Donors</a>
+                </div>
+                <form class="hu-search-form search">
+                    <img src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/search.svg"> <input placeholder="Search Harding" type="text"> <input type="submit" value="Search">
+                </form>
+            </div>
+            <div class="subnav">
+                <a href="https://www.harding.edu/admissions/request-info/index">Request Information</a> <a href="https://www.harding.edu/admissions/visit/index">Schedule a Visit</a> <a href="https://www.harding.edu/admissions/apply/index">Apply</a>
+            </div>
+        </div>
+    </div>
+    <div class="widget hero" style="background-position: 85%; background-image: url(//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/2014-047-79092.jpg)">
+        <div class="hero-content">
+            <div class="hero-above-title"></div>
+            <h1>
+                Academic Catalog
+            </h1>
+            <div class="hero-text"></div>
+            <nav aria-label="Breadcrumb" class="breadcrumbs">
+                <a href="https://www.harding.edu/index" title="Harding University Home"><img alt="www.harding.edu" src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/home.svg"></a> <img src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/right.svg"> <a href="/">Academic Catalog</a>
+            </nav>
+        </div>
+    </div>
+<script src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/jquery.min.js"></script>
+<script src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/widgets.js"></script>
+</div>
+<!-- End Client Header -->
+
+<!-- Start Client Footer -->
+<div id="acalog-client-footer" class="acalog-custom">
+    <div class="widget contact-info last"></div>
+    <div id="footer">
+        <div class="transition dark">
+            <div class="angled"></div>
+            <div class="angled2"></div>
+        </div>
+        <div class="footer-content">
+            <div class="gradient"></div>
+            <div class="footer-contact">
+                <a href="https://www.harding.edu" data-uw-rm-brl="PR" data-uw-original-href="https://www.harding.edu"><img alt="Harding Wordmark" class="logo" src="//acalog-clients.s3.amazonaws.com/production/hardingu/img/gateway/wordmark_black.png"></a>
+                <div class="footer-address">
+                    Harding University<br>
+                    915 E. Market Ave.<br>
+                    Searcy, AR 72149-5615<br>
+                    <br>
+                    501-279-4000
+                </div>
+                <div class="button-row">
+                    <a href="https://www.harding.edu/contact-us" data-uw-rm-brl="PR" data-uw-original-href="https://www.harding.edu/contact-us">Contact Us</a> <a href="https://www.harding.edu/events" data-uw-rm-brl="PR" data-uw-original-href="https://www.harding.edu/events">Events</a>
+                </div>
+                <div class="social-icons">
+                    <a aria-label="Facebook" class="social-icon" href="https://www.facebook.com/HardingU/" data-uw-rm-brl="PR" data-uw-original-href="https://www.facebook.com/HardingU/"><i class="fa-brands fa-facebook-f">​</i></a> <a aria-label="X" class="social-icon" href="https://x.com/HardingU" data-uw-rm-brl="PR" data-uw-original-href="https://x.com/HardingU"><i class="fa-brands fa-x-twitter">​</i></a> <a aria-label="Instagram" class="social-icon" href="https://www.instagram.com/hardinguniversity/?hl=en" data-uw-rm-brl="PR" data-uw-original-href="https://www.instagram.com/hardinguniversity/?hl=en"><i class="fa-brands fa-instagram">​</i></a> <a aria-label="LinkedIn" class="social-icon" href="https://www.linkedin.com/school/harding-university/mycompany/"><i class="fa-brands fa-linkedin-in">​</i></a> <a aria-label="YouTube" class="social-icon" href="https://www.youtube.com/@HardingU"><i class="fa-brands fa-youtube">​</i></a> <a aria-label="Pinterest" class="social-icon" href="https://www.pinterest.com/hardingu/" data-uw-rm-brl="PR" data-uw-original-href="https://www.pinterest.com/hardingu/"><i class="fa-brands fa-pinterest-p">​</i></a>
+                </div>
+            </div>
+            <div class="links">
+                <a href="https://library.harding.edu/" data-uw-rm-brl="PR" data-uw-original-href="https://library.harding.edu/">Library</a> <a href="https://hubookstore.harding.edu/" data-uw-rm-brl="PR" data-uw-original-href="https://hubookstore.harding.edu/">Bookstore</a> <a href="https://news.harding.edu/" data-uw-rm-brl="PR" data-uw-original-href="https://news.harding.edu/">News at HUtoday</a> <a href="https://www.harding.edu/about/offices-departments/heritage/" data-uw-rm-brl="PR" data-uw-original-href="/about/offices-departments/heritage/">Hotel and Conference Center</a>
+            </div>
+            <div class="links">
+                <a href="https://www.harding.edu/about/offices-departments/hr/" data-uw-rm-brl="PR" data-uw-original-href="/about/offices-departments/hr/">Work at Harding</a> <a href="https://www.harding.edu/titleix/" data-uw-rm-brl="PR" data-uw-original-href="/titleix/">Title IX</a> <a href="https://www.harding.edu/consumer-info/" data-uw-rm-brl="PR" data-uw-original-href="/consumer-info/">Consumer Information</a> <a href="https://www.harding.edu/life-at-harding/campus-safety/security-report/" data-uw-rm-brl="PR" data-uw-original-href="/life-at-harding/campus-safety/security-report/">Security Report</a>
+            </div>
+            <div class="bottom-bar">
+                <a href="https://www.harding.edu/consumer-info/privacy-policy" data-uw-rm-brl="PR" data-uw-original-href="https://www.harding.edu/consumer-info/privacy-policy">Privacy Policy</a> <a href="https://www.harding.edu/consumer-info/terms-of-service" data-uw-rm-brl="PR" data-uw-original-href="https://www.harding.edu/consumer-info/terms-of-service">Terms of Service</a> <a href="https://www.harding.edu/consumer-info/accessibility-policy" data-uw-rm-brl="PR" data-uw-original-href="https://www.harding.edu/consumer-info/accessibility-policy">Accessibility Policy</a> <a href="https://www.harding.edu/consumer-info/copyright" data-uw-rm-brl="PR" data-uw-original-href="https://www.harding.edu/consumer-info/copyright">© Harding University</a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Client Footer --></header></td>
+  </tr>
+  <tr class="acalog-block-n1" role="navigation" aria-label="Get Print-friendly Page">
+    <td class="block_n1_left">&#160;&#160;&#160;</td>
+    <td class="block_n1_right"><span class="n1_header">Harding University</span></td>
+  </tr>
+  <tr role="main">
+	<td class="block_border_left">&#160;&#160;&#160;</td>
+    <td class="block_n2_and_content">
+	<table class="block_n2_and_content table_default">
+   		<tr>
+			<!-- Begin N3 -->
+					<td class="block_date_outer_left small_date_pad">&#160;</td>
+		<td class="block_date_inner medium_date_pad">
+			<span class="date">&#160;
+				Nov 16, 2026			</span>
+		</td>
+		<td class="block_date_outer_right small_date_pad">&#160;</td>
+		<td class="block_n2_and_content">
+	<table class="table_default">
+		<tr>
+			<td class="block_n3_off block_n3_left">
+				<span class="n3_header"><span id="acalog-catalog-name" class="no_display">2026-2027 Academic Catalog</span>&#160;</span>
+			</td>
+			<td class="block_n3_off block_n3_right float_right">
+										<form name="select_catalog" method="post" action="/index.php">
+											<table class="default_no_width">
+						<tr>
+							<td>
+																	<div id="catalog_select_parent">
+										<label for="select_catalog" class="sr-only" id="catalog_label">Select a Catalog</label>
+										<select name="catalog" aria-labelledby="catalog_label" title="Select a Catalog">														<option value="4" selected>2026-2027 Academic Catalog</option>
+																												<option value="3" >2025-2026 Academic Catalog [ARCHIVED CATALOG]</option>
+																												<option value="2" >2024-2025 Academic Catalog [ARCHIVED CATALOG]</option>
+																												<option value="1" >2023-2024 Academic Catalog [ARCHIVED CATALOG]</option>
+																												<option value="5" >******DRAFT CATALOG 2027-2028****** [ARCHIVED CATALOG]</option>
+																								</select>
+									</div>
+							</td>
+							<td>&#160;&#160;
+																		<input type="submit" title="Select a Catalog" name="sel_cat_submit" value="GO">
+																		&#160;
+															</td>
+						</tr>
+					</table>
+				</form>
+			</td>
+		</tr>
+	</table>
+</td>
+<!-- End N3. -->
+		</tr>
+	     <tr>
+			<!-- N2 goes here. -->
+		  	<td class="block_n2" colspan="3" id="acalog-nav">
+  <table class="block_n2_content links_table">
+	<tr>
+		<td role="search" aria-labelledby="n2_search_header" class="block_n2_search
+			">
+		<form name="n2_search" method="get" action="/search_advanced.php" onSubmit="return validateSearchOptions()">
+		<fieldset id="global-search-fieldset">
+			<legend>Global Search</legend>
+		  <input type="hidden" title="Cur Cat OID" name="cur_cat_oid" value="4">
+		  <input type="hidden" title="Search Database" name="search_database" value="Search">
+		  <input type="hidden" title="Search" name="search_db" value="Search">
+		  <input type="hidden" title="cpage" name="cpage" value="1">
+		  <input type="hidden" title="ecpage" name="ecpage" value="1">
+		  <input type="hidden" title="ppage" name="ppage" value="1">
+		  <input type="hidden" title="spage" name="spage" value="1">
+		  <input type="hidden" title="tpage" name="tpage" value="1">
+			<span class="n2_search_header" id="n2_search_header">Catalog Search</span>			<br>
+			<span class="show">
+				<label for="location" class="no_display">Choose Search Location</label>
+				<div id="location_select_parent">
+					
+					<script>
+						function reloadLocations() {
+							var locations_in_use = 0; 
+							var chosen_locations_div = document.getElementById('chosen_locations_div');
+							var category = document.getElementById('location').value;
+							if((category === '1' || category === '3' || category === '33') && (locations_in_use !== 0)){
+								chosen_locations_div.classList.remove("disabled");
+							} else {
+								chosen_locations_div.classList.add("disabled");
+							}
+						};
+					</script>
+
+					<select name="location" id="location" title="Choose Search Location" onChange="reloadLocations();">
+						<option value="-1">Select an option</option>
+														<option value="3" selected>Courses</option>
+																<option value="1" selected>Programs</option>
+																<option value="28" selected>Hierarchy Items</option>
+																<option value="30" selected>Other Content</option>
+																<option value="33" selected>Entire Catalog</option>
+													</select>
+				</div>
+				<br>
+			</span>
+
+
+			<span>
+				                <div id="chosen_locations_div" class= >
+					
+                </div>					
+
+			</span>
+			<span class="show">
+				<label for="keyword" class="no_display">Search Keyword Field</label><input type="text" title="Search Keyword Field, required" name="filter[keyword]" value="Enter Keyword  " size="15" maxlength="150" id="keyword" onFocus="if (this.value == 'Enter Keyword  ') { this.value=''; }" class="n2_form_words" aria-required="true" required>
+				<input type="submit" title="GO" value="GO"><br>
+			</span>
+			<span class="show"><br />
+				<input type="checkbox" title="Exact Match" name="filter[exact_match]" value="1" checked="checked" id="exact_match_n2"> 
+				<label for="exact_match_n2" class="n2_search">Whole Word/Phrase</label>
+				<br />
+			</span>
+		  	<span class="n2_search">
+				<a href="/search_advanced.php?catoid=4" class="navbar">
+					Advanced Search				</a>
+			</span>
+			<br>
+		</fieldset>
+	</form>
+		</td>
+	</tr>
+	<tr>
+	  <td>
+		<hr class="navbar">
+	  </td>
+	</tr>
+	<tr>
+	  <td class="nowrap">
+
+		<!-- Begin Responsive -->
+				<div class="mobile-menu-toggle" tabindex=0>Catalog Navigation</div>
+				<!-- End Responsive -->
+		
+		<table class="block_n2_links links_table">
+		  <tr>
+			<td id="acalog-navigation">
+			  <div class="n2_links">&#160;&#160;<a href="/index.php?catoid=4" class="navbar">Catalog Home</a></div>
+				<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1138" class="navbar">Archived Catalogs</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1168" class="navbar">Programs of Study</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1081" class="navbar">Program Learning Outcomes</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href='/preview_program.php?catoid=4&poid=2119' class="navbar">The Core - Liberal Arts Program</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1155" class="navbar">Course Descriptions</a>			</div>
+			<hr class="navbar">			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1147" class="navbar">College of Allied Health</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1149" class="navbar">College of Arts &amp; Sciences</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1151" class="navbar">College of Bible &amp; Ministry</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1016" class="navbar">Paul R. Carter College of Business Administration</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1139" class="navbar">Cannon-Clary College of Education</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1141" class="navbar">Carr College of Nursing</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1153" class="navbar">College of Pharmacy</a>			</div>
+			<hr class="navbar">			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1160" class="navbar">Honors College</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1169" class="navbar">School of Theology</a>			</div>
+			<hr class="navbar">			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1143" class="navbar">Center for Health Sciences</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1146" class="navbar">Academic Resource Center</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=4&navoid=1014" class="navbar">International Programs</a>			</div>
+			<hr class="navbar">			</div>
+						</td>
+		  </tr>
+		</table>
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+		<hr class="navbar">
+	  </td>
+	</tr>
+	<tr>
+	  <td class="block_n2_tools">
+		  <div class="n2_links"> &#160;&#160;<a href="/portfolio_nopop.php?catoid=4" class="navbar"><span class="acalog_term_backpack">My Favorites</span></a></div>
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+		<hr class="navbar">
+	  </td>
+	</tr>
+  </table>
+		</td>
+<!-- End of N2 -->
+          <td class="block_content_outer">
+            <table class="table_default">
+              <tr>
+                <td class="block_content" colspan="2">
+                  <table class="table_default">
+                    <tr>
+                      <td>
+                      						<div class="help_block"><a href="help.php?catoid=4" onClick="acalogPopup('help.php?catoid=4', 'help', 770, 530, 'yes');return false;" accesskey="h" target="_blank" class="help acalog-highlight-ignore"><strong>HELP</strong></a></div>
+						<span class="acalog_catalog_name">2026-2027 Academic Catalog</span> <br>
+					<div style="float: right"><a rel="nofollow" href="/preview_course_nopop.php?catoid=4&amp;coid=17529&amp;print" onclick="acalogPopup('/preview_course_nopop.php?catoid=4&amp;coid=17529&amp;print', 'print_preview', 770, 530, 'yes');return false;" target="_blank"  class="print_link acalog-highlight-ignore" alt="Text Version" title="Print-Friendly Page (opens a new window)" aria-label="Print-Friendly Page (opens a new window)"><span class="sr-only">Print-Friendly Page (opens a new window)</span></a></div><div class='acalog-social-media-links float_right'> </div>
+			
+				<a onClick="acalogPopup('portfolio.php?catoid=4&add=1&coid=17529#', 'portfolio', 770, 530, 'yes');return false;" target="_blank" class="portfolio_link acalog-highlight-ignore acalog-icon" href="javascript:void(0);" title="Add to Favorites (opens a new window)" aria-label="Add to Favorites (opens a new window)"><span class="sr-only">Add to Favorites (opens a new window)</span></a>
+			                      </td>
+                    </tr>
+                  </table>
+                  <p><h1 id='course_preview_title'>COMP 2200 - Introduction to Machine Learning</h1><hr>A comprehensive introduction to machine learning using Python, focusing on models, evaluation, and real-world applications. Students will explore how to select, validate, and implement models, examine performance metrics, and gain insights into research methodologies using various frameworks.<br><br>Prerequisite(s): <a href="preview_course_nopop.php?catoid=4&coid=15695" onclick="acalogPopup('preview_course.php?catoid=4&coid=15695&print', '3', 770, 530, 'yes');return false;" rel="remote /ajax/preview_course.php?catoid=4&coid=15695&display_options[location]=tooltip&show" id="tt4307" target="_blank" aria-label="View course details for COMP 1500">COMP 1500</a><span style="display: none !important">&#160;</span> or <a href="preview_course_nopop.php?catoid=4&coid=15697" onclick="acalogPopup('preview_course.php?catoid=4&coid=15697&print', '3', 770, 530, 'yes');return false;" rel="remote /ajax/preview_course.php?catoid=4&coid=15697&display_options[location]=tooltip&show" id="tt5670" target="_blank" aria-label="View course details for COMP 1700">COMP 1700</a><span style="display: none !important">&#160;</span> <br><br>Credit Hours: 3<br><br>Term Offered: Spring of even years<br><br></p>
+				  <br><hr><div style="float: right">&#160;<a href="javascript:void(0);" class="acalog_top_link acalog-highlight-ignore">Back to Top</a> | <a rel="nofollow" href="/preview_course_nopop.php?catoid=4&amp;coid=17529&amp;print" onclick="acalogPopup('/preview_course_nopop.php?catoid=4&amp;coid=17529&amp;print', 'print_preview', 770, 530, 'yes');return false;" target="_blank"  class="print_link acalog-highlight-ignore" alt="Text Version" title="Print-Friendly Page (opens a new window)" aria-label="Print-Friendly Page (opens a new window)"><span class="sr-only">Print-Friendly Page (opens a new window)</span></a></div><div class='acalog-social-media-links float_right'> </div>
+			
+				<a onClick="acalogPopup('portfolio.php?catoid=4&add=1&coid=17529#', 'portfolio', 770, 530, 'yes');return false;" target="_blank" class="portfolio_link acalog-highlight-ignore acalog-icon" href="javascript:void(0);" title="Add to Favorites (opens a new window)" aria-label="Add to Favorites (opens a new window)"><span class="sr-only">Add to Favorites (opens a new window)</span></a>
+			                  </td>
+              </tr>
+            </table>
+            </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr role="contentinfo" aria-label="Footer with copyright and information links">
+	<td class="block_footer_lb">&#160;&#160;&#160;</td>
+	<td class="block_footer_rb">
+<div class="nobr">All <a href="/misc/catalog_list.php?catoid=4" class="footer" >catalogs</a> &#169; 2026 Harding University.</div> <div class="nobr">Powered by <a href="http://www.moderncampus.com" target="_blank" class="footer">Modern Campus Catalog™</a>.</div>
+</td>
+  </tr>
+</table>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.12/js/select2.full.min.js" integrity="sha384-dX8Lmeo3rVl33tMPuGNrcJxh8dqvxqzN4SuirunQiozfAzUJnI9u50cMy12ArXxb" crossorigin="anonymous"></script>
+

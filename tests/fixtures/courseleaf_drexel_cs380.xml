@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<courseinfo>
+<course code="CS 380">
+<![CDATA[
+<div class="courseblock">
+<p class="courseblocktitle"><strong><span class='cdspacing'>CS&#160;380  </span><span class='cdspacing'>Artificial Intelligence</span> 3.0 <span class='cdspacing'>Credits</span></strong></p>
+<p class="courseblockdesc">
+Explores the foundations of artificial intelligence, including overviews of problem solving, basic and adversarial search, logical agents, natural language processing, machine learning, reinforcement learning, neural networks, deep learning, generative AI, and related special topics, along with their applications to real-world problems.<br />
+</p>
+<b>College/Department:</b> Col of Computing & Informatics/Computing<br/>
+<b>Repeat Status:</b> Not repeatable for credit
+<br/>
+<b>Restrictions:</b> Cannot enroll if classification is Freshman<br/>
+<b>Prerequisites:</b> CS 260 [Min Grade: C] and CS 270 [Min Grade: C]
+<br/><br/></div>
+]]>
+</course>
+</courseinfo>

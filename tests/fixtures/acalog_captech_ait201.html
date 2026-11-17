@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>AIT 201 - Introduction to Artificial Intelligence - </title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="shortcut icon" href="//acalog-clients.s3.amazonaws.com/production/captechu/img/favicon/favicon.ico" />
+<link href="//acalog-clients.s3.amazonaws.com/production/captechu/css/gateway/user-styles.css" rel="stylesheet" type="text/css">
+<link href="css/public_custom.php" rel="stylesheet" type="text/css">
+<link href="global_styles.css?v=01252018" rel="stylesheet" type="text/css">
+		<!-- Cache-busting string (deploy date) added to asset URLS -->
+		<script src="js/jquery.js?v=01252018" type="text/javascript" integrity="sha384-Jw7oPgh1QVMkLkgcwNwaftGwTRyvqNATr31v+ibxI2j+iDl6DBuAetkzsVDzcarO"></script>
+		<script src="js/Tooltip.js?v=01252018" type="text/javascript" integrity="sha384-UMB1Hx/m9CdDRUtWmG6bt7gOgctm6YWwJQ8uukCii62Vh72yo8uQO0LoUIAZWBM2"></script>
+ 		<script src="javascripts.js?v=02232018" type="text/javascript" integrity="sha384-ooicF5pDDd8rcvSonkcaDMatceDtwsF5VHaGB/UPjdx3VFdceJUWM0/iGkda12BS"></script>
+		<script src="js/smlinks.js?v=01252018" type="text/javascript" integrity="sha384-8w7FIGtEuZL0dUz6XQVVDpBI6As5YXPwao6YqF4Jt2cSrgykXvBn8xAxo+vKlpBf"></script>
+			<script src="/js/highlight.js?v=01252018" type="text/javascript" integrity="sha384-/N6E97UUUZqqm9M4Fk0tseDccUbVKSjriIyzH2cxQU/cfGbheI1tQvAfVo4yBbsp"></script>
+<noscript><p><span class="error">Javascript is currently not supported, or is disabled by this browser. Please enable Javascript for full functionality.</span></p></noscript>
+<script type="text/javascript">var gatewayFeatureSearchBar = true; var gatewayFeatureToolbarText = false; var gatewayFeatureBackToTopText = false;</script>
+<link type="text/css" rel="stylesheet" href="//acalog-clients.s3.amazonaws.com/global/css/gateway-styles-reset.css" />
+<link type="text/css" rel="stylesheet" href="//acalog-clients.s3.amazonaws.com/global/css/gateway-styles-nojs.css" id="gateway-styles-nojs" />
+<link type="text/css" rel="stylesheet" href="//acalog-clients.s3.amazonaws.com/production/captechu/css/gateway/gateway-styles.css" />
+<script type="text/javascript">document.getElementById("gateway-styles-nojs").parentNode.removeChild(document.getElementById("gateway-styles-nojs"));</script>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+<script type="text/javascript" src="//acalog-clients.s3.amazonaws.com/global/js/jquery.browser.js"></script>
+<script type="text/javascript" src="//acalog-clients.s3.amazonaws.com/global/js/gateway-javascript.js"></script>
+<!--[if lte IE 8]><script type="text/javascript" src="//acalog-clients.s3.amazonaws.com/global/js/select-fix.js"></script><![endif]-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-migrate-3.4.1.min.js" crossorigin="anonymous"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.12/css/select2.min.css" rel="stylesheet" integrity="sha384-KZO2FRYNmIHerhfYMjCIUaJeGBRXP7CN24SiNSG+wdDzgwvxWbl16wMVtWiJTcMt" crossorigin="anonymous" />
+
+<!-- Begin Responsive -->
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<script src="https://kit.fontawesome.com/e35e04f508.js" integrity="sha384-R6VdFS8kVoq95OAh0ovy8RJ/16mag2fYdzr7zVL0mCTflvoedXn1ImqSlT8Es4SM" crossorigin="anonymous"></script>
+<script src="/mobile-js.js" integrity="sha384-8c7xrierIq1kMm5dyQ8AbZgXFUK0RP5zv2b5Wal7ERFl9XL9jGOU14nsrTHaUr2Q"></script>
+<link href="/mobile-styles.css" rel="stylesheet" type="text/css" integrity="sha384-x48QjmWDEbnCCjvlJy7x37BaGkf6QNekrKYReCsO6qL8J6pFkAnxVgcPsjPHGxCu" />
+<!-- End Responsive -->
+
+</head>
+
+<body>
+<!-- Skip to Navigation -->
+<nav id="skip" aria-label="Skip to Main Content">
+	<a href="#course_preview_title" class="skip-nav">Skip to Content</a>
+</nav>
+<table class="toplevel table_default">
+  <tr>
+    <td colspan="2" class="block_n2_and_content" id="acalog-header"><header role="banner"><div id="acalog-client-javascript" class="acalog-custom">
+<script src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/gwa-integration.js"></script>
+</div>
+<!-- End Client Javascript -->
+
+<!-- Start Client Header -->
+<div id="acalog-client-header" class="acalog-custom">
+    <div id="main-wrapper">
+        <header id="header" class="headroom headroom--top headroom--pinned">
+            <div class="header--logo">
+                <a class="header--logo-link" href="https://www.captechu.edu/" alt="">
+                <div class="header--logo-img">
+                    <img src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/capitol-logo--color.png" alt="Capitol Technology University">
+                </div>
+                <div class="header--logo-icon">
+                    <img src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/capitol-logo--sheild.png" alt="Capitol Technology Logo">
+                </div></a>
+            </div>
+        </header>
+<!-- no search or nav for campaign landing pages"-->
+        <div id="nav--full">
+            <div class="nav--full-trigger">
+                <div class="search--site-search">
+                    <div class="search--site-inner">
+                        <div id="search--main">
+                            <form action="https://www.captechu.edu/search" method="get">
+                                <input id="site-search-input" name="keywords" type="search" aria-label="search the site" tabindex="-1"> <button tabindex="-1"><span class="zmdi zmdi-arrow-right"><span class="screen-reader-text">Search Submit</span></span></button>
+                            </form>
+                        </div>
+                    </div><button id="search--trigger" class="toggle-tabindex" tabindex="0" aria-label="Open Search Input"><span class="screen-reader-text">Search Open and Close</span></button>
+                </div><button id="nav--trigger" class="trigger block-scroll" rel="nav--full" tabindex="0"><span class="menu-icon"><span class="menu-line menu-line-1">‌</span> <span class="menu-line menu-line-2">‌</span> <span class="menu-line menu-line-3">‌</span> <span class="screen-reader-text">Menu Open</span></span></button>
+            </div>
+            <div class="menu-circle-transition"></div>
+            <div class="nav--full-overlay">
+                <div class="nav--main-body">
+                    <div id="nav--header">
+                        <div class="nav--header-inner">
+                            <div class="nav--header-logo">
+                                <img src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/capitol-logo--mono.png" alt="Capitol Technology Logo">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav--header-search">
+                        <form method="get" action="https://www.captechu.edu/search">
+                            <input id="site-search-input" class="search--mobile toggle-tabindex" type="search" name="keywords" aria-label="search the site" tabindex="-1"> <button class="search--mobile-btn toggle-tabindex" tabindex="-1"><span class="zmdi zmdi-search"><span class="screen-reader-text">Search Submit</span></span></button>
+                        </form>
+                    </div>
+                    <nav id="nav--main" class="triggered-area">
+                        
+<!-- Fields of Study Menu -->
+                        <ul>
+                            <li class="nav--main-li-level-1">
+                                <button class="level-1--btn toggle-tabindex" aria-controls="content-a" aria-expanded="true" id="accordion-control-a" name="fields-of-study" tabindex="-1">Fields of Study</button>
+                                <ul class="level-2--ul" aria-hidden="false" id="content-a">
+                                    <li>
+                                        <a href="https://www.captechu.edu/fields-of-study/aviation-and-astronautical-sciences" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/8471">Aviation and Astronautical Sciences</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/fields-of-study/computer-science-artificial-intelligence-and-data-science" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/20">Computer Science, Artificial Intelligence and Data Science</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/fields-of-study/construction-and-facilities" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/4471">Construction and Facilities</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/fields-of-study/critical-infrastructure" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/22">Critical Infrastructure</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/fields-of-study/cyber-and-information-security" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/11">Cyber & Information Security</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/fields-of-study/cyberpsychology" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/8521">Cyberpsychology</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/fields-of-study/engineering" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/8541">Engineering</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/fields-of-study/engineering-technologies" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/18">Engineering Technologies</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/fields-of-study/intelligence-and-global-security-studies" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/8611">Intelligence and Security Studies</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/fields-of-study/management-of-technology" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/23">Management of Technology</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/fields-of-study/occupational-safety-and-health" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/8516">Occupational Safety and Health</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/fields-of-study/unmanned-systems" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/1226">Unmanned Systems</a>
+                                    </li>
+                                </ul>
+                            </li>
+<!-- Degree Program Menu -->
+                            <li class="nav--main-li-level-1">
+                                <button class="level-1--btn toggle-tabindex" aria-controls="content-b" aria-expanded="false" id="accordion-control-b" name="degrees" tabindex="-1">Degrees and Programs</button>
+                                <ul class="level-2--ul" aria-hidden="true" id="content-b" style="display: none;">
+                                    <li>
+                                        <a href="https://www.captechu.edu/degrees-and-programs/doctoral-degrees" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/4046">Doctoral Degrees</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/degrees-and-programs/masters-degrees" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/26">Master&#8217;s Degrees</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/degrees-and-programs/bachelors-degrees" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/37">Bachelor&#8217;s Degrees</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/online" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/4596">Online Programs</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/degrees-and-programs/associate-degrees" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/51">Associate Degrees</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/degrees-and-programs/certificates" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/54">Certificates</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/degrees-and-programs/minor-degrees" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/4226">Minor Degrees</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/degrees-and-programs/summer-programs" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/77">Summer Programs</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/degrees-and-programs/stem-events" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/9096">STEM Events</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/webinar-series" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/5436">Webinar Series</a>
+                                    </li>
+                                </ul>
+                            </li>
+<!-- Admissions Menu -->
+                            <li class="nav--main-li-level-1">
+                                <button class="level-1--btn toggle-tabindex" aria-controls="content-c" aria-expanded="false" id="accordion-control-c" name="admissions" tabindex="-1">Admission & Financial Aid</button>
+                                <ul class="level-2--ul" aria-hidden="true" id="content-c" style="display: none;">
+                                    <li>
+                                        <a href="https://www.captechu.edu/admissions/doctoral" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/91">Doctoral</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/admissions-and-financial-aid/masters" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/1080">Master&#8217;s</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/admissions-and-financial-aid/undergraduate" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/85">Undergraduate</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/admissions-and-financial-aid/transfer-students" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/92">Transfer Students</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/admissions-and-financial-aid/military-and-veterans" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/93">Military and Veterans</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/admissions-and-financial-aid/international-students" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/94">International Students</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/admissions-and-financial-aid/parents" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/95">Parents</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/admissions-and-financial-aid/admissions-counselor" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/4971">Admissions Counselor</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/admissions-and-financial-aid/capitol-connections-online" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/5886">Capitol Connections Online</a>
+                                    </li>
+                                </ul>
+                            </li>
+<!-- Student Experience Menu -->
+                            <li class="nav--main-li-level-1">
+                                <button class="level-1--btn toggle-tabindex" aria-controls="content-d" aria-expanded="false" id="accordion-control-d" name="student-experience" tabindex="-1">Student Experience</button>
+                                <ul class="level-2--ul" aria-hidden="true" id="content-d" style="display: none;">
+                                    <li>
+                                        <a href="https://www.captechu.edu/student-experience/builder-culture" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/97">Builder Culture</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/student-experience/campus-life" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/98">Campus Life</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/student-experience/clubs-and-organizations" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/100">Clubs and Organizations</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/student-experience/centers-and-labs" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/1231">Centers and Labs</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/student-experience/online-classes" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/111">Online Classes</a>
+                                    </li>
+                                </ul>
+                            </li>
+<!-- Professional Success Menu -->
+                            <li class="nav--main-li-level-1">
+                                <button class="level-1--btn toggle-tabindex" aria-controls="content-e" aria-expanded="false" id="accordion-control-e" name="professional-success" tabindex="-1">Professional Success</button>
+                                <ul class="level-2--ul" aria-hidden="true" id="content-e" style="display: none;">
+                                    <li>
+                                        <a href="https://www.captechu.edu/professional-success/capitol-commitment" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/113">The Capitol Commitment</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/professional-success/top-employers" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/114">Top Employers</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/professional-success/co-ops-and-internships" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/116">Co-ops and Internships</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/professional-success/professional-education" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/117">Professional Education</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/professional-success/find-mentor" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/118">Find a Mentor</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/professional-success/career-services" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/119">Career Services</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/professional-success/capitol-online-job-board" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/120">Capitol Online Job Board</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/professional-success/recruiters-and-employers" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/121">Recruiters and Employers</a>
+                                    </li>
+                                </ul>
+                            </li>
+<!-- About Capitol Menu -->
+                            <li class="nav--main-li-level-1">
+                                <button class="level-1--btn toggle-tabindex" aria-controls="content-f" aria-expanded="false" id="accordion-control-f" name="about-capitol" tabindex="-1">About Capitol</button>
+                                <ul class="level-2--ul" aria-hidden="true" id="content-f" style="display: none;">
+                                    <li>
+                                        <a href="https://www.captechu.edu/about-capitol/why-capitol-tech" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/4811">Why Capitol Tech</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/about-capitol/at-a-glance" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/123">At a Glance</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/about-capitol/mission-vision-and-goals" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/993">Mission, Vision and Goals</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/about-capitol/diversity-equity-and-inclusion" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/10081">Diversity, Equity and Inclusion</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/about-capitol/washington-dc" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/124">Washington, D.C.</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/about-capitol/capitol-history" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/992">Capitol History</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/about-capitol/leadership" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/125">Leadership</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/about-capitol/capitol-partners" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/6631">Capitol Partners</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/news-events" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="news-events">News and Events</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/about-capitol/visitors-campus" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/132">Visitors/Campus</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/about-capitol/accreditation" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/135">Accreditation</a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.captechu.edu/about-capitol/recognitions-awards" class="toggle-tabindex" tabindex="-1" data-drupal-link-system-path="node/136">Recognitions & Awards</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+                <div id="nav--main-secondary">
+                    <div class="nav--main-secondary--full">
+                        <div class="main-secondary--row contained">
+                            <ul class="main-secondary--callout-btn">
+                                <li>
+                                    <a href="https://www.captechu.edu/current-students" class="btn btn-alternative toggle-tabindex" alt="Current Students" tabindex="-1">Current Students</a>
+                                </li>
+                                <li>
+                                    <a href="https://www.captechu.edu/faculty-staff" class="btn btn-alternative toggle-tabindex" alt="Faculty &amp; Staff" tabindex="-1">Faculty & Staff</a>
+                                </li>
+                                <li>
+                                    <a href="https://www.captechu.edu/alumni-and-giving" class="btn btn-alternative toggle-tabindex" alt="Alumni &amp; Giving" tabindex="-1">Alumni & Giving</a>
+                                </li>
+                                <li>
+                                    <a href="https://www.captechu.edu/support" class="btn btn-alternative toggle-tabindex" alt="Donate Now" tabindex="-1">Donate Now</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="main-secondary--row contained">
+                            <ul class="main-secondary--link-list">
+                                <li>
+                                    <a href="https://www.captechu.edu/about-capitol/why-capitol-tech" class="toggle-tabindex" tabindex="-1">Why Capitol Tech</a>
+                                </li>
+                                <li>
+                                    <a href="https://www.captechu.edu/news-events" class="toggle-tabindex" tabindex="-1">News & Events</a>
+                                </li>
+                                <li>
+                                    <a href="https://www.captechu.edu/blog" class="toggle-tabindex" tabindex="-1">Capitology Blog</a>
+                                </li>
+                                <li>
+                                    <a href="https://www.captechu.edu/about-capitol/visitorscampus" class="toggle-tabindex" tabindex="-1">Maps / Directions</a>
+                                </li>
+                                <li>
+                                    <a href="https://www.captechu.edu/about-capitol/contact-us" class="toggle-tabindex" tabindex="-1">Contact Us</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="main-secondary--row contained">
+                            <div class="main-secondary--social nav--social-buttons">
+                                <ul class="nav--social">
+                                    <li>
+                                        <a href="https://www.facebook.com/CapTechU" class="toggle-tabindex" tabindex="-1" target="_blank"><span class="zmdi zmdi-facebook"><span class="screen-reader-text">Facebook</span></span></a>
+                                    </li>
+                                    <li>
+                                        <a href="https://twitter.com/captechu" class="toggle-tabindex" tabindex="-1" target="_blank"><span class="zmdi zmdi-twitter"><span class="screen-reader-text">Twitter</span></span></a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.youtube.com/c/capitoltechnologyuniversity" class="toggle-tabindex" tabindex="-1" target="_blank"><span class="zmdi zmdi-youtube"><span class="screen-reader-text">YouTube</span></span></a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.instagram.com/capitoltech/" class="toggle-tabindex" tabindex="-1" target="_blank"><span class="zmdi zmdi-instagram"><span class="screen-reader-text">Instagram</span></span></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav--main-secondary--cta">
+                        <div class="main-secondary--row">
+                            <div class="callouts">
+                                <a href="https://www.captechu.edu/apply" class="btn btn-extreme red-darker toggle-tabindex" tabindex="-1">Apply Online</a> <a href="https://www.captechu.edu/request-information" class="btn btn-extreme red-dark toggle-tabindex" tabindex="-1">Request Information</a> <a href="https://www.captechu.edu/admissions-and-financial-aid/schedule-info-session-or-visit-campus" class="btn btn-extreme red-darker toggle-tabindex" tabindex="-1">Visit Campus</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+<!-- end global nav -->
+        
+<!-- RENDERING THE PAGE -->
+        <div class="dialog-off-canvas-main-canvas" data-off-canvas-main-canvas="">
+            <div id="maincontent" role="main">
+                <div class="page-top no-nav-bar">
+                    <div class="header--title-area">
+                        <div class="super-contained">
+                            <ul class="breadcrumbs" role="navigation">
+                                <li style="list-style: none; display: inline">
+                                    <div class="breadcrumbs--home-icon">
+                                        <img src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/capitol-logo--breadcrumb.png" alt="Capitol Technology Logo">
+                                    </div>
+                                </li>
+                                <li>
+                                    <a href="https://www.captechu.edu/">HOME</a>
+                                </li>
+                                <li>
+                                    <a href="https://www.captechu.edu/current-students">current students</a>
+                                </li>
+                            </ul>
+                            <h1 class="page-title">
+                                Capitol Technology University Course Catalog
+                            </h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/jquery.min.js"></script>
+<script src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/jquery-migrate-1.4.1.min.js"></script>
+<script src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/head_script.js"></script>
+<script src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/webforms_custom.js"></script>
+<script src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/index.js"></script>
+<script src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/modernizr.min.js"></script>
+<script src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/fastClick.js"></script>
+<script src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/object-fit-polyfil.js"></script>
+<script src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/rellax.js"></script>
+<script src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/slick.js"></script>
+<script src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/alert.js"></script>
+<script src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/drupal.index.js"></script>
+<script src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/blockchain.js"></script>
+</div>
+<!-- End Client Header -->
+
+<!-- Start Client Footer -->
+<div id="acalog-client-footer" class="acalog-custom">
+    <footer id="footer">
+        <div class="footer-main">
+            <div class="footer-main--left">
+                <div class="footer-row">
+                    <div class="footer-column">
+                        <h2 class="footer-column--title">
+                            RESOURCES
+                        </h2>
+                        <ul class="footer-column--list clean" aria-hidden="false" id="resources">
+                            <li>
+                                <a href="https://mycapitol.captechu.edu/ics/">My Capitol</a>
+                            </li>
+                            <li>
+                                <a href="https://www.captechu.edu/current-students/puente-library" data-drupal-link-system-path="node/1020">Puente Library</a>
+                            </li>
+                            <li>
+                                <a href="https://www.captechu.edu/capitol-store" data-drupal-link-system-path="node/175">Campus Store</a>
+                            </li>
+                            <li>
+                                <a href="https://www.captechu.edu/about-capitol/visitors-campus/maps-directions" data-drupal-link-system-path="node/1068">Maps / Directions</a>
+                            </li>
+                            <li>
+                                <a href="https://www.captechu.edu/policies" data-drupal-link-system-path="node/173">Policies</a>
+                            </li>
+                            <li>
+                                <a href="https://www.captechu.edu/faculty-and-staff/employment" data-drupal-link-system-path="node/166">Employment</a>
+                            </li>
+                            <li>
+                                <a href="https://mycapitol.captechu.edu/ICS/Public_Information/">Consumer Information</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h2 class="footer-column--title">
+                            CONTACT
+                        </h2>
+                        <ul class="footer-column--list clean" aria-hidden="false" id="contact">
+                            <li>
+                                <a href="https://www.captechu.edu/request-information" data-drupal-link-system-path="node/4836">Request Information</a>
+                            </li>
+                            <li>
+                                <a href="https://www.captechu.edu/apply" data-drupal-link-system-path="node/7836">Apply Online</a>
+                            </li>
+                            <li>
+                                <a href="https://www.captechu.edu/admissions/schedule-visit">Schedule a Visit</a>
+                            </li>
+                            <li>
+                                <a href="https://www.captechu.edu/about-capitol/visitorscampus/offices-and-departments">Directory</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h2 class="footer-column--title">
+                            CONNECT WITH US
+                        </h2>
+                        <div class="footer-column--list">
+                            <div class="footer-social nav--social-buttons">
+                                <ul class="nav--social">
+                                    <li>
+                                        <a href="https://www.facebook.com/CapTechU" alt="Facebook" target="_blank"><span class="zmdi zmdi-facebook"><span class="screen-reader-text">Facebook</span></span></a>
+                                    </li>
+                                    <li>
+                                        <a href="https://twitter.com/captechu" alt="Twitter" target="_blank"><span class="zmdi zmdi-twitter"><span class="screen-reader-text">Twitter</span></span></a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.youtube.com/c/capitoltechnologyuniversity" alt="YouTube" target="_blank"><span class="zmdi zmdi-youtube"><span class="screen-reader-text">YouTube</span></span></a>
+                                    </li>
+                                    <li>
+                                        <a href="https://www.instagram.com/capitoltech/" alt="Instagram" target="_blank"><span class="zmdi zmdi-instagram"><span class="screen-reader-text">Instagram</span></span></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div><a href="https://www.captechu.edu/about-capitol/accreditation" alt="An accredited private non-profit University">An accredited private non-profit University.</a>
+                    </div>
+                </div>
+                <div>
+                    <br>
+                    If you have a disability and the format of any material on our website interferes with your ability to access the information, please contact Olivia Bathersfield, Director of Marketing and Communications, <a href="mailto:webmaster@captechu.edu">webmaster@captechu.edu</a>
+                </div>
+            </div>
+            <div class="footer-main--right">
+                <div class="">
+                    <div class="footer-address-container">
+                        <div class="footer-icon">
+                            <img src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/capitol-logo--footer.png" alt="Capitol Technology Logo">
+                        </div>
+                        <div class="footer-address">
+                            <div class="vcard address">
+                                <span class="address-title">Capitol Technology University</span>
+                                <div class="adr">
+                                    <span class="street-address display-block">11301 Springfield Road</span> <span class="region">Laurel, MD</span> <span class="postal-code">20708</span> <a href="tel:1-800-950-1992" alt="Toll-Free Phone" title="Toll-Free Phone"><span class="display-block">800.950.1992</span></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="footer-post">
+            <div class="contained">
+                <div class="footer-post--top">
+                    <div class="footer-post--pin">
+                        <img src="//acalog-clients.s3.amazonaws.com/production/captechu/img/gateway/capitol--map-pin.png" alt="map pin icon">
+                    </div><a href="https://www.google.com/maps/place/11301+Springfield+Rd,+Laurel,+MD+20708/@39.0655761,-77.0485704,10.22z/data=!4m5!3m4!1s0x89b7c2eae1c77ffb:0xc030014ec15f763!8m2!3d39.0470439!4d-76.852139" target="_blank" alt="Google Maps" title="Google Maps">
+                    <div class="footer-post--pin-text">
+                        <p>
+                            Located in Greater Washington, D.C.
+                        </p>
+                    </div></a>
+                </div>
+                <div class="footer-post--bottom">
+                    <p>
+                        © 2023 Capitol Technology University
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <div class="back-to-top">
+        <button class="top-trigger">Back to Top</button>
+    </div>
+</div>
+<!-- End Client Footer --></header></td>
+  </tr>
+  <tr class="acalog-block-n1" role="navigation" aria-label="Get Print-friendly Page">
+    <td class="block_n1_left">&#160;&#160;&#160;</td>
+    <td class="block_n1_right"><span class="n1_header">Capitol Technology University</span></td>
+  </tr>
+  <tr role="main">
+	<td class="block_border_left">&#160;&#160;&#160;</td>
+    <td class="block_n2_and_content">
+	<table class="block_n2_and_content table_default">
+   		<tr>
+			<!-- Begin N3 -->
+					<td class="block_date_outer_left small_date_pad">&#160;</td>
+		<td class="block_date_inner medium_date_pad">
+			<span class="date">&#160;
+				Nov 16, 2026			</span>
+		</td>
+		<td class="block_date_outer_right small_date_pad">&#160;</td>
+		<td class="block_n2_and_content">
+	<table class="table_default">
+		<tr>
+			<td class="block_n3_off block_n3_left">
+				<span class="n3_header"><span id="acalog-catalog-name" class="no_display">2026-2027 Course Catalog</span>&#160;</span>
+			</td>
+			<td class="block_n3_off block_n3_right float_right">
+										<form name="select_catalog" method="post" action="/index.php">
+											<table class="default_no_width">
+						<tr>
+							<td>
+																	<div id="catalog_select_parent">
+										<label for="select_catalog" class="sr-only" id="catalog_label">Select a Catalog</label>
+										<select name="catalog" aria-labelledby="catalog_label" title="Select a Catalog">														<option value="11" selected>2026-2027 Course Catalog</option>
+																												<option value="8" >2025-2026 Course Catalog [ARCHIVED CATALOG]</option>
+																												<option value="9" >2024-2025 Course Catalog [ARCHIVED CATALOG]</option>
+																												<option value="1" >2023-2024 Course Catalog [ARCHIVED CATALOG]</option>
+																												<option value="12" >2027-2028 Course Catalog [ARCHIVED CATALOG]</option>
+																								</select>
+									</div>
+							</td>
+							<td>&#160;&#160;
+																		<input type="submit" title="Select a Catalog" name="sel_cat_submit" value="GO">
+																		&#160;
+															</td>
+						</tr>
+					</table>
+				</form>
+			</td>
+		</tr>
+	</table>
+</td>
+<!-- End N3. -->
+		</tr>
+	     <tr>
+			<!-- N2 goes here. -->
+		  	<td class="block_n2" colspan="3" id="acalog-nav">
+  <table class="block_n2_content links_table">
+	<tr>
+		<td role="search" aria-labelledby="n2_search_header" class="block_n2_search
+			">
+		<form name="n2_search" method="get" action="/search_advanced.php" onSubmit="return validateSearchOptions()">
+		<fieldset id="global-search-fieldset">
+			<legend>Global Search</legend>
+		  <input type="hidden" title="Cur Cat OID" name="cur_cat_oid" value="11">
+		  <input type="hidden" title="Search Database" name="search_database" value="Search">
+		  <input type="hidden" title="Search" name="search_db" value="Search">
+		  <input type="hidden" title="cpage" name="cpage" value="1">
+		  <input type="hidden" title="ecpage" name="ecpage" value="1">
+		  <input type="hidden" title="ppage" name="ppage" value="1">
+		  <input type="hidden" title="spage" name="spage" value="1">
+		  <input type="hidden" title="tpage" name="tpage" value="1">
+			<span class="n2_search_header" id="n2_search_header">Catalog Search</span>			<br>
+			<span class="no_display">
+				<label for="location" class="no_display">Choose Search Location</label>
+				<div id="location_select_parent">
+					
+					<script>
+						function reloadLocations() {
+							var locations_in_use = 167; 
+							var chosen_locations_div = document.getElementById('chosen_locations_div');
+							var category = document.getElementById('location').value;
+							if((category === '1' || category === '3' || category === '33') && (locations_in_use !== 0)){
+								chosen_locations_div.classList.remove("disabled");
+							} else {
+								chosen_locations_div.classList.add("disabled");
+							}
+						};
+					</script>
+
+					<select name="location" id="location" title="Choose Search Location" onChange="reloadLocations();">
+						<option value="-1">Select an option</option>
+														<option value="3">Courses</option>
+																<option value="1">Programs</option>
+																<option value="28">Hierarchy Items</option>
+																<option value="30">Other Content</option>
+																<option value="33" selected>Entire Catalog</option>
+													</select>
+				</div>
+				<br>
+			</span>
+
+
+			<span>
+				                <div id="chosen_locations_div" class= >
+					
+                </div>					
+
+			</span>
+			<span class="show">
+				<label for="keyword" class="no_display">Search Keyword Field</label><input type="text" title="Search Keyword Field, required" name="filter[keyword]" value="Enter Keyword  " size="15" maxlength="150" id="keyword" onFocus="if (this.value == 'Enter Keyword  ') { this.value=''; }" class="n2_form_words" aria-required="true" required>
+				<input type="submit" title="GO" value="GO"><br>
+			</span>
+			<span class="no_display"><br />
+				<input type="checkbox" title="Exact Match" name="filter[exact_match]" value="1"  id="exact_match_n2"> 
+				<label for="exact_match_n2" class="n2_search">Whole Word/Phrase</label>
+				<br />
+			</span>
+		  	<span class="n2_search">
+				<a href="/search_advanced.php?catoid=11" class="navbar">
+					Advanced Search				</a>
+			</span>
+			<br>
+		</fieldset>
+	</form>
+		</td>
+	</tr>
+	<tr>
+	  <td>
+		<hr class="navbar">
+	  </td>
+	</tr>
+	<tr>
+	  <td class="nowrap">
+
+		<!-- Begin Responsive -->
+				<div class="mobile-menu-toggle" tabindex=0>Catalog Navigation</div>
+				<!-- End Responsive -->
+		
+		<table class="block_n2_links links_table">
+		  <tr>
+			<td id="acalog-navigation">
+			  <div class="n2_links">&#160;&#160;<a href="/index.php?catoid=11" class="navbar">Catalog Home</a></div>
+<hr class="navbar">			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=619" class="navbar">General Information</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=648" class="navbar">Accreditation</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=658" class="navbar">Admissions</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=631" class="navbar">Tuition/Financial Aid</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=680" class="navbar">Academic Policies</a>			</div>
+			<hr class="navbar">			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=662" class="navbar">Certificate Programs</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=668" class="navbar">Undergraduate Degree Programs</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=661" class="navbar">Master&#8217;s Degree Programs</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=654" class="navbar">Doctoral Degree Programs</a>			</div>
+			<hr class="navbar">			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=659" class="navbar">Professional Development and Workforce Training</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=649" class="navbar">Course Descriptions</a>			</div>
+			<hr class="navbar">			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=665" class="navbar">Academic Calendars</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=666" class="navbar">Honor Societies</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=632" class="navbar">Faculty, Staff, and Leadership</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=667" class="navbar">Map and Directions</a>			</div>
+							<div class="n2_links">&#160;&#160;<a href="/content.php?catoid=11&navoid=681" class="navbar">BS in Aviation Professional Pilot Handbook</a>			</div>
+						</td>
+		  </tr>
+		</table>
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+		<hr class="navbar">
+	  </td>
+	</tr>
+	<tr>
+	  <td class="block_n2_tools">
+		  <div class="n2_links"> &#160;&#160;<a href="/portfolio_nopop.php?catoid=11" class="navbar"><span class="acalog_term_backpack">My Portfolio</span></a></div>
+	  </td>
+	</tr>
+	<tr>
+	  <td>
+		<hr class="navbar">
+	  </td>
+	</tr>
+  </table>
+		</td>
+<!-- End of N2 -->
+          <td class="block_content_outer">
+            <table class="table_default">
+              <tr>
+                <td class="block_content" colspan="2">
+                  <table class="table_default">
+                    <tr>
+                      <td>
+                      						<div class="help_block"><a href="help.php?catoid=11" onClick="acalogPopup('help.php?catoid=11', 'help', 770, 530, 'yes');return false;" accesskey="h" target="_blank" class="help acalog-highlight-ignore"><strong>HELP</strong></a></div>
+						<span class="acalog_catalog_name">2026-2027 Course Catalog</span> <br>
+					<div style="float: right"><a rel="nofollow" href="/preview_course_nopop.php?catoid=11&amp;coid=19868&amp;print" onclick="acalogPopup('/preview_course_nopop.php?catoid=11&amp;coid=19868&amp;print', 'print_preview', 770, 530, 'yes');return false;" target="_blank"  class="print_link acalog-highlight-ignore" alt="Text Version" title="Print-Friendly Page (opens a new window)" aria-label="Print-Friendly Page (opens a new window)"><span class="sr-only">Print-Friendly Page (opens a new window)</span></a></div><div class='acalog-social-media-links float_right'> </div>
+			
+				<a onClick="acalogPopup('portfolio.php?catoid=11&add=1&coid=19868#', 'portfolio', 770, 530, 'yes');return false;" target="_blank" class="portfolio_link acalog-highlight-ignore acalog-icon" href="javascript:void(0);" title="Add to Portfolio (opens a new window)" aria-label="Add to Portfolio (opens a new window)"><span class="sr-only">Add to Portfolio (opens a new window)</span></a>
+			                      </td>
+                    </tr>
+                  </table>
+                  <p><h1 id='course_preview_title'>AIT 201 - Introduction to Artificial Intelligence</h1><hr><strong>Class Hour(s)</strong> 3<br><strong>Laboratory Hour(s)</strong> 0<br><strong>3</strong> <strong>Semester Credit Hour(s)</strong> <br><br>Introduction to Artificial Intelligence explores the foundational principles and applications of AI. Students delve into key concepts such as machine learning, data representation, and problemsolving algorithms. The course introduces ethical considerations in AI development and its societal impact. Exploring various types of AI, from rule-based systems to machine learning approaches, students gain insights into the breadth of AI applications. Hands-on projects provide practical experience in implementing AI techniques. This course equips students with a broad understanding of AI&#8217;s capabilities and challenges, laying the groundwork for advanced studies and real-world applications. <br><br><strong>Prerequisite(s):</strong> MA 128<br></p>
+				  <br><hr><div style="float: right">&#160;<a href="javascript:void(0);" class="acalog_top_link acalog-highlight-ignore">Back to Top</a> | <a rel="nofollow" href="/preview_course_nopop.php?catoid=11&amp;coid=19868&amp;print" onclick="acalogPopup('/preview_course_nopop.php?catoid=11&amp;coid=19868&amp;print', 'print_preview', 770, 530, 'yes');return false;" target="_blank"  class="print_link acalog-highlight-ignore" alt="Text Version" title="Print-Friendly Page (opens a new window)" aria-label="Print-Friendly Page (opens a new window)"><span class="sr-only">Print-Friendly Page (opens a new window)</span></a></div><div class='acalog-social-media-links float_right'> </div>
+			
+				<a onClick="acalogPopup('portfolio.php?catoid=11&add=1&coid=19868#', 'portfolio', 770, 530, 'yes');return false;" target="_blank" class="portfolio_link acalog-highlight-ignore acalog-icon" href="javascript:void(0);" title="Add to Portfolio (opens a new window)" aria-label="Add to Portfolio (opens a new window)"><span class="sr-only">Add to Portfolio (opens a new window)</span></a>
+			                  </td>
+              </tr>
+            </table>
+            </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+  <tr role="contentinfo" aria-label="Footer with copyright and information links">
+	<td class="block_footer_lb">&#160;&#160;&#160;</td>
+	<td class="block_footer_rb">
+<div class="nobr">All <a href="/misc/catalog_list.php?catoid=11" class="footer" >catalogs</a> &#169; 2026 Capitol Technology University.</div> <div class="nobr">Powered by <a href="http://www.moderncampus.com" target="_blank" class="footer">Modern Campus Catalog™</a>.</div>
+<script type='text/javascript'>
+	var _gaq = _gaq || [];
+	_gaq.push(['_setAccount', 'UA-NUMBER']);
+	_gaq.push(['_trackPageview']);
+	(function() {
+		var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+	})();
+</script></td>
+  </tr>
+</table>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.12/js/select2.full.min.js" integrity="sha384-dX8Lmeo3rVl33tMPuGNrcJxh8dqvxqzN4SuirunQiozfAzUJnI9u50cMy12ArXxb" crossorigin="anonymous"></script>
+
