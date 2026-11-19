@@ -167,6 +167,44 @@ def syllabus_catalog_cmd():
     typer.echo(f"Saved {n} catalog syllabus documents.")
 
 
+SECTION_LABELS = {"summary": "Summary", "outcomes": "Learning outcomes", "topics": "Weekly topics",
+                  "assessments": "Grading", "materials": "Textbooks and materials", "instructor": "Instructor",
+                  "contact_hours": "Contact hours", "grading_scale": "Grading scale", "offered": "Terms offered"}
+
+
+def _source_label(src: dict) -> str:
+    when = " ".join(str(x) for x in (src["term"], src["year"]) if x)
+    return f"{src['source_kind']}{' ' + when if when else ''}: {src['source_url']}"
+
+
+@syllabus_app.command("show")
+def syllabus_show_cmd(school: str, code: str):
+    """Show a course's combined syllabus: each section with the document it came from."""
+    conn = _conn()
+    c = queries.find_course(conn, school, code)
+    if not c:
+        typer.echo("Not found.")
+        raise typer.Exit(1)
+    p = queries.syllabus_profile(conn, c["id"])
+    typer.echo(f"{c['institution']}  {c['code']}  {c['title']}  ({len(p['documents'])} source documents)\n")
+    for name, sec in p["sections"].items():
+        typer.echo(f"{SECTION_LABELS[name]}  [from {_source_label(sec['source'])}]")
+        v = sec["value"]
+        if name == "outcomes":
+            lines = [f"{i}. {o}" for i, o in enumerate(v, 1)]
+        elif name == "topics":
+            lines = [f"{t['week'] or '-'}: {t['title']}" for t in v]
+        elif name == "assessments":
+            lines = [f"{a['name']}: {a['weight_pct']:g}%" if a["weight_pct"] is not None else a["name"] for a in v]
+        elif name == "materials":
+            lines = [m["title"] + (f" ({m['authors']})" if m["authors"] else "") for m in v]
+        else:
+            lines = [str(v)]
+        for line in lines:
+            typer.echo(f"    {line}")
+    typer.echo("\nNot found: " + (", ".join(SECTION_LABELS[n] for n in p["missing"]) or "-"))
+
+
 @app.command("ui")
 def ui_cmd(port: int = typer.Option(8501, help="Port for the web UI.")):
     """Open the web UI (Streamlit) in the browser."""

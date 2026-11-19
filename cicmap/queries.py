@@ -112,6 +112,27 @@ def syllabi(conn, course_id: int) -> List[dict]:
     return out
 
 
+PROFILE_SECTIONS = ("summary", "outcomes", "topics", "assessments", "materials", "instructor", "contact_hours",
+                    "grading_scale", "offered")
+
+
+def syllabus_profile(conn, course_id: int) -> dict:
+    """One combined syllabus per course: each section taken from the best document that has it
+    (documents are already ordered best first), with its source, plus the sections nobody provided."""
+    docs = syllabi(conn, course_id)
+    sections = {}
+    for name in PROFILE_SECTIONS:
+        for d in docs:
+            value = (json.loads(d["extra_json"]) if d.get("extra_json") else {}).get(name) \
+                if name == "offered" else d.get(name)
+            if value:
+                sections[name] = {"value": value, "source": {k: d[k] for k in (
+                    "id", "source_kind", "source_url", "term", "year", "match_confidence")}}
+                break
+    return {"sections": sections, "missing": [n for n in PROFILE_SECTIONS if n not in sections],
+            "documents": docs}
+
+
 def totals(conn) -> dict:
     r = conn.execute(
         "SELECT (SELECT COUNT(*) FROM program_sources WHERE active = 1) AS programs, "

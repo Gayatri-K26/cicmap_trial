@@ -55,3 +55,17 @@ def test_load_catalog_is_idempotent(conn):
     assert (d["source_kind"], d["match_method"], d["match_confidence"]) == ("catalog", "catalog", 1.0)
     assert d["outcomes"] == ["Mine data.", "Choose algorithms."] and d["summary"] == "Patterns in data."
     assert queries.syllabi(conn, 2) == []
+
+
+def test_profile_combines_sources(conn):
+    syllabi.load_catalog(conn)
+    syllabi.save_document(conn, [1], "https://prof.test.edu/cs373.pdf", "faculty", {
+        "term": "Fall", "year": 2024, "assessments": [{"name": "Final", "weight_pct": 30}],
+        "materials": [{"title": "Introduction to Data Mining", "authors": "Tan"}]}, 0.9, "code_in_text")
+    p = queries.syllabus_profile(conn, 1)
+    s = p["sections"]
+    assert s["outcomes"]["source"]["source_kind"] == "catalog"         # only the catalog has outcomes
+    assert s["assessments"]["source"]["source_kind"] == "faculty"      # only the PDF has grading
+    assert s["materials"]["value"][0]["title"] == "Introduction to Data Mining"
+    assert "instructor" in p["missing"] and "outcomes" not in p["missing"]
+    assert [d["source_kind"] for d in p["documents"]] == ["faculty", "catalog"]  # real syllabi first

@@ -218,15 +218,41 @@ def course_panel(course_id: int):
         syllabi_view(course_id)
 
 
+SECTION_LABELS = {"summary": "Summary", "outcomes": "Learning outcomes", "topics": "Weekly topics",
+                  "assessments": "Grading", "materials": "Textbooks and materials", "instructor": "Instructor",
+                  "contact_hours": "Contact hours", "grading_scale": "Grading scale", "offered": "Terms offered"}
+
+
 def syllabi_view(course_id: int):
-    items = queries.syllabi(conn, course_id)
+    p = queries.syllabus_profile(conn, course_id)
+    items = p["documents"]
     if not items:
-        st.info("No syllabi extracted for this course yet. Syllabus discovery from the school's own site is "
-                "the next pipeline step.")
+        st.info("No syllabus documents for this course yet.")
         return
+    st.markdown("#### Combined syllabus")
+    st.caption("Each section comes from the best source that has it. Real syllabi rank above the catalog entry.")
+    for name, sec in p["sections"].items():
+        if name == "summary":
+            continue  # shown on the Details tab
+        src = sec["source"]
+        when = " ".join(str(x) for x in (src["term"], src["year"]) if x)
+        st.markdown(f"**{SECTION_LABELS[name]}** <small>· from [{src['source_kind']}{' ' + when if when else ''}]"
+                    f"({src['source_url']})</small>", unsafe_allow_html=True)
+        v = sec["value"]
+        if name == "outcomes":
+            st.markdown("\n".join(f"{i}. {o}" for i, o in enumerate(v, 1)))
+        elif isinstance(v, list):
+            st.dataframe(pd.DataFrame(v), hide_index=True, width="stretch")
+        else:
+            st.markdown(str(v))
+    missing = [SECTION_LABELS[n] for n in p["missing"]]
+    if missing:
+        st.caption("Not found in any source: " + ", ".join(missing))
+
+    st.markdown(f"#### Source documents ({len(items)})")
     for s in items:
-        label = " ".join(str(x) for x in (s["term"], s["year"], s["section"]) if x) or "Syllabus"
-        with st.expander(f"{label} · {s['instructor'] or 'instructor unknown'}", expanded=len(items) == 1):
+        label = " ".join(str(x) for x in (s["source_kind"], s["term"], s["year"], s["section"]) if x)
+        with st.expander(label + (f" · {s['instructor']}" if s["instructor"] else "")):
             st.markdown(f"[Source]({s['source_url']}) · {s['source_type'] or ''} · "
                         f"match confidence {s['match_confidence'] or '—'} · {s['delivery_mode'] or ''}")
             if s["summary"]:
