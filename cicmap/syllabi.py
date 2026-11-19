@@ -37,6 +37,81 @@ def split_outcomes(text: Optional[str]) -> List[str]:
     return [p.strip(" ;") for p in parts if p.strip(" ;")]
 
 
+TERM_RE = re.compile(r"\b(spring|summer|fall|winter|autumn)\s*(?:semester|quarter|term)?\s*'?(20\d\d)\b", re.I)
+INSTRUCTOR_RE = re.compile(r"^(?:instructors?|professor|lecturer)\s*:?\s*(.*)$", re.I)
+NOT_A_NAME_RE = re.compile(r"office|hours|e-?mail|phone|tba|information|contact", re.I)  # labels, not names
+OUTCOME_HEAD_RE = re.compile(r"outcomes|objectives|you will be able to|students will be able to", re.I)
+BULLET_RE = re.compile(r"^\s*(?:[•●▪◦\-*–]|\d{1,2}[.)])\s+")
+WEIGHT_RE = re.compile(r"([A-Za-z][A-Za-z0-9 &/'-]{0,40}?)\s*[:\-–(]?\s*(?<![\d.])(\d{1,3}(?:\.\d+)?)\s*%")
+WEEK_RE = re.compile(r"^(?:week|wk\.?)\s*(\d{1,2})\b\s*[:.\-–)]*\s*(.{3,200})$", re.I)
+
+
+def parse_text(text: str) -> dict:
+    """Deterministic pass over a syllabus found on the web (any layout). Takes only what it can read
+    reliably; the rest stays in raw_text for an LLM pass."""
+    lines = [" ".join(line.split()) for line in text.splitlines()]
+    lines = [line for line in lines if line]
+    doc: dict = {"outcomes": [], "topics": [], "assessments": [], "materials": [], "raw_text": "\n".join(lines)}
+    m = TERM_RE.search("\n".join(lines[:60]))
+    if m:
+        doc["term"] = "Fall" if m.group(1).lower() == "autumn" else m.group(1).title()
+        doc["year"] = int(m.group(2))
+    for i, line in enumerate(lines[:80]):
+        m = INSTRUCTOR_RE.match(line)
+        if m:
+            name = (m.group(1) or (lines[i + 1] if i + 1 < len(lines) else "")).strip(" ,;")
+            if 2 < len(name) <= 80 and "@" not in name and not NOT_A_NAME_RE.search(name):
+                doc["instructor"] = name
+                break
+    for i, line in enumerate(lines):
+        if len(line) < 150 and OUTCOME_HEAD_RE.search(line):
+            doc["outcomes"] += _bullets_after(lines, i)
+    doc["outcomes"] = list(dict.fromkeys(doc["outcomes"]))[:25]
+    doc["assessments"] = _weights(lines)
+    for line in lines:
+        m = WEEK_RE.match(line)
+        if m:
+            doc["topics"].append({"week": m.group(1), "title": m.group(2)})
+    return doc
+
+
+def assessment_kind(name: str) -> str:
+    n = name.lower()
+    for kind, words in (("exam", ("exam", "midterm", "final", "test")), ("project", ("project", "capstone")),
+                        ("quiz", ("quiz",)), ("participation", ("participation", "attendance", "discussion")),
+                        ("homework", ("homework", "assignment", "lab", "problem set"))):
+        if any(w in n for w in words):
+            return kind
+    return "other"
+
+
+def _bullets_after(lines: List[str], start: int) -> List[str]:
+    """Bullet items following a heading, joining lines a PDF wrapped (they start lowercase)."""
+    items: List[str] = []
+    for line in lines[start + 1:start + 60]:
+        if BULLET_RE.match(line):
+            items.append(BULLET_RE.sub("", line))
+        elif items and line[:1].islower():
+            items[-1] += " " + line
+        elif items or len(line) > 150:
+            break
+    return [x for x in items if 10 <= len(x) <= 400]
+
+
+def _weights(lines: List[str]) -> List[dict]:
+    """'Homework 40%' / 'Midterm: 25%' pairs, kept only if they add up to about 100 (so a letter-grade
+    scale like 'A 90%' is never mistaken for weights)."""
+    found = []
+    for line in lines:
+        for name, w in WEIGHT_RE.findall(line):
+            name = name.strip(" -")
+            if re.fullmatch(r"[A-F][+-]?|total|grade|above|below", name, re.I):
+                continue
+            found.append({"name": name, "kind": assessment_kind(name), "weight_pct": float(w)})
+    total = sum(a["weight_pct"] for a in found)
+    return found if found and 90 <= total <= 110 else []
+
+
 def catalog_document(course: dict) -> dict:
     """The syllabus sections a catalog entry provides. `course` is a courses row as a dict."""
     extra = json.loads(course["extra_json"]) if course.get("extra_json") else {}

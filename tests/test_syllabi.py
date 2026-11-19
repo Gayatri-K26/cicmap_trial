@@ -114,3 +114,32 @@ def test_common_materials_match_editions(conn):
     assert len(common) == 1  # 'Deep Learning' is used at one school only
     assert common[0]["school_count"] == 2
     assert common[0]["schools"] == {"Other U": ["AI 300"], "Test U": ["CS 373"]}
+
+
+WEB_SYLLABUS = """CS 380: Artificial Intelligence\tSpring 2021
+Instructor:
+Office Hours
+Instructor: Dr. Ada Lovelace
+The course objectives are to:
+• Describe search methods for hard
+problems in AI.
+• Practice programming AI algorithms.
+Grading: Homework 40%, Midterm 25%, Final exam 35%
+Grading scale: A 90%, B 80%
+Week 1: Intro and agents
+Week 2 - Search
+"""
+
+
+def test_parse_text_takes_what_it_can_read():
+    d = syllabi.parse_text(WEB_SYLLABUS)
+    assert (d["term"], d["year"], d["instructor"]) == ("Spring", 2021, "Dr. Ada Lovelace")  # not 'Office Hours'
+    assert d["outcomes"] == ["Describe search methods for hard problems in AI.", "Practice programming AI algorithms."]
+    assert [(a["name"], a["kind"], a["weight_pct"]) for a in d["assessments"]] == [
+        ("Homework", "homework", 40.0), ("Midterm", "exam", 25.0), ("Final exam", "exam", 35.0)]
+    assert d["topics"] == [{"week": "1", "title": "Intro and agents"}, {"week": "2", "title": "Search"}]
+    assert "Grading scale" in d["raw_text"]
+
+
+def test_weights_that_dont_add_up_are_dropped():
+    assert syllabi.parse_text("Homework 40%\nAttendance matters: 5% of students fail")["assessments"] == []

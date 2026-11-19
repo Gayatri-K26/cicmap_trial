@@ -118,6 +118,40 @@ def assess(text: str, code: str, course_title: Optional[str], url: str,
     return 0.75, "code_in_text"
 
 
+def source_kind(url: str) -> str:
+    """Instructor pages ('/~name/', '/homes/name/') vs department or office pages."""
+    return "faculty" if re.search(r"/~|/homes/|/people/|/users/|/faculty/", url, re.I) else "department"
+
+
+def discover(conn, institution: Optional[str] = None, progress=lambda m: None) -> dict:
+    """Search, fetch, keep real syllabi, parse them deterministically and store them."""
+    from . import documents, syllabi
+
+    counts = {"candidates": 0, "fetched": 0, "kept": 0, "courses": set()}
+    for f in candidates(conn, institution):
+        if NOT_SYLLABUS_URL.search(f["url"]):
+            continue
+        counts["candidates"] += 1
+        try:
+            text, kind = documents.fetch_text(conn, f["url"])
+        except Exception as e:  # 404, robots.txt, bot check, unreadable file: skip this result
+            progress(f"skip {f['url']}: {type(e).__name__}")
+            continue
+        counts["fetched"] += 1
+        verdict = assess(text, f["code"], f["course_title"], f["url"], f["title"])
+        if not verdict:
+            continue
+        doc = syllabi.parse_text(text)
+        syllabi.save_document(conn, [f["course_id"]], f["url"], source_kind(f["url"]), doc, verdict[0], verdict[1],
+                              source_type=kind)
+        conn.commit()
+        counts["kept"] += 1
+        counts["courses"].add(f["course_id"])
+        progress(f"{f['institution']} {f['code']}: {f['url']}")
+    counts["courses"] = len(counts["courses"])
+    return counts
+
+
 def summary(found: List[dict]) -> Dict[str, Dict[str, int]]:
     """Per school: courses with at least one candidate, and candidate count."""
     by: Dict[str, Dict[str, set]] = {}

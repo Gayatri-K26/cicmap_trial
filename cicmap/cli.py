@@ -211,6 +211,17 @@ def syllabus_portal_cmd(school: Optional[str] = typer.Option(None, help="Only th
                f"(pages loaded {fetcher.pages_fetched}).")
 
 
+@syllabus_app.command("web")
+def syllabus_web_cmd(school: Optional[str] = typer.Option(None, help="Only this school, e.g. 'drexel'."),
+                     verbose: bool = typer.Option(False, "-v", "--verbose")):
+    """Find syllabi on each school's own website (Brave Search; needs BRAVE_API_KEY in .env)."""
+    from . import websearch
+
+    c = websearch.discover(_conn(), school, progress=lambda m: typer.echo(f"    {m}") if verbose else None)
+    typer.echo(f"{c['kept']} syllabi kept for {c['courses']} courses ({c['fetched']} of {c['candidates']} "
+               "candidate pages read).")
+
+
 @syllabus_app.command("show")
 def syllabus_show_cmd(school: str, code: str):
     """Show a course's combined syllabus: each section with the document it came from."""

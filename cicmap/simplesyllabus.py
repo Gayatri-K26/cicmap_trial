@@ -75,25 +75,15 @@ def _lines(comp) -> List[str]:
     return [x for x in lines[1:] if x]  # first line is the section title
 
 
-def _kind(name: str) -> str:
-    n = name.lower()
-    for kind, words in (("exam", ("exam", "midterm", "final", "test")), ("project", ("project", "capstone")),
-                        ("quiz", ("quiz",)), ("participation", ("participation", "attendance", "discussion")),
-                        ("homework", ("homework", "assignment", "lab", "problem set"))):
-        if any(w in n for w in words):
-            return kind
-    return "other"
-
-
 def _assessments(lines: List[str]) -> List[dict]:
     """'Midterm: 25%' lines, or a short name line followed by its description (weight left to the LLM)."""
     out = []
     for i, line in enumerate(lines):
         m = _PCT_LINE.match(line)
         if m:
-            out.append({"name": m.group("name").strip(), "kind": _kind(line), "weight_pct": float(m.group("w"))})
+            out.append({"name": m.group("name").strip(), "kind": syllabi.assessment_kind(line), "weight_pct": float(m.group("w"))})
         elif len(line) <= 60 and not line.endswith((".", ":")) and i + 1 < len(lines) and len(lines[i + 1]) > 60:
-            out.append({"name": line, "kind": _kind(line), "weight_pct": None, "details": lines[i + 1][:1000]})
+            out.append({"name": line, "kind": syllabi.assessment_kind(line), "weight_pct": None, "details": lines[i + 1][:1000]})
     return out
 
 
