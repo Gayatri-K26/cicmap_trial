@@ -24,7 +24,7 @@ LABEL_MAP = {
 @register
 class CourseLeafAdapter(CatalogAdapter):
     name = "courseleaf"
-    version = 1
+    version = 2
 
     def detect(self, url: str, html: str) -> float:
         low = html.lower()
@@ -112,9 +112,15 @@ class CourseLeafAdapter(CatalogAdapter):
                 if len(spans) >= 2:
                     title = clean(spans[1].get_text(" "))
                 txt = clean(title_el.get_text(" ")) or ""
-                cm = re.search(r"(\d+(?:\.\d+)?(?:\s*(?:-|to)\s*\d+(?:\.\d+)?)?)\s*Credits?", txt, re.I)
+                cm = (re.search(r"(\d+(?:\.\d+)?(?:\s*(?:-|to)\s*\d+(?:\.\d+)?)?)\s*Credits?", txt, re.I)
+                      # Miami style: "CSE 268. Introduction to Knowledge Representation. (3)"
+                      or re.search(r"\((\d+(?:\.\d+)?(?:\s*(?:-|–|to)\s*\d+(?:\.\d+)?)?)\)\s*$", txt))
                 if cm:
                     credits_text = cm.group(1)
+                if len(spans) < 2:
+                    tm = re.match(r"[A-Z&]+\s*\d+[A-Z]?\.\s+(.+?)\.?\s*(\([^)]*\))?\s*$", txt)
+                    if tm:
+                        title = tm.group(1).rstrip(".")
 
         desc_el = block.select_one(".courseblockdesc")
         description = None
@@ -132,9 +138,28 @@ class CourseLeafAdapter(CatalogAdapter):
                 credits_text = value
             else:
                 extra[label] = value
+        if description and not out["prereq_text"] and not out["coreq_text"]:
+            # Miami style: requisites written inside the description ("... Prerequisite: CSE 232 OR CSE 271.")
+            description, inline = _split_requisites(description)
+            out.update({k: v for k, v in inline.items() if v})
         cmin, cmax = parse_credits(credits_text)
         return CourseData(code=entry.code, title=title, credits_text=credits_text, credits_min=cmin,
                           credits_max=cmax, description=description, extra=extra, source_url=url, **out)
+
+
+REQ_IN_DESC_RE = re.compile(r"\s*\b(Prerequisites?|Pre-requisites?|Co-?requisites?)(?:\s*\(s\))?\s*:\s*", re.I)
+
+
+def _split_requisites(description: str):
+    """Pull 'Prerequisite: ...' / 'Co-requisite: ...' sentences off the end of a description."""
+    parts = REQ_IN_DESC_RE.split(description)
+    found = {"prereq_text": None, "coreq_text": None}
+    if len(parts) < 3:
+        return description, found
+    for label, value in zip(parts[1::2], parts[2::2]):
+        key = "coreq_text" if label.lower().startswith("co") else "prereq_text"
+        found[key] = clean(value.rstrip(". ")) or None
+    return clean(parts[0]) or None, found
 
 
 def _breadcrumbs(soup: BeautifulSoup):

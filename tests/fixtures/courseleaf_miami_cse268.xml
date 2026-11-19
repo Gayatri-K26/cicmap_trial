@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<courseinfo>
+<course code="CSE 268">
+<![CDATA[
+<div class="courseblock">
+<p class="courseblocktitle"><strong>CSE&#160;268.  Introduction to Knowledge Representation.  (3)</strong></p>
+<p class="courseblockdesc">
+Introduces fundamental concepts in the field of knowledge representation and reasoning. Students learn how to use state-of-the-art logic-based languages, techniques, and tools to develop models that capture information about the world to be used for solving complex problems. They develop small intelligent systems capable of performing reasoning tasks such as planning, question answering, or problem solving. Students also benefit from interaction with experts in the field of knowledge representation, who will be invited to present lectures on their research.<br />Prerequisite: <a href="/search/?P=CSE%20232" title="CSE&#160;232" class="bubblelink code" onclick="return showCourse(this, 'CSE 232');">CSE&#160;232</a> OR <a href="/search/?P=CSE%20271" title="CSE&#160;271" class="bubblelink code" onclick="return showCourse(this, 'CSE 271');">CSE&#160;271</a>.<br />
+</p>
+</div>
+]]>
+</course>
+</courseinfo>
