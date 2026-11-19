@@ -10,3 +10,5 @@ pytest
 playwright
 streamlit
 pandas
+pypdf
+python-docx

@@ -6,13 +6,15 @@ can't or shouldn't read are dropped: catalog pages (already used), syllabus port
 closed to crawlers, and LMS pages behind a login.
 """
 import json
+import re
 import time
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlparse
 
 import httpx
 
 from . import config
+from .text import find_codes
 
 BRAVE_URL = "https://api.search.brave.com/res/v1/web/search"
 MIN_INTERVAL = 0.2  # seconds between searches; the plan allows far more, no need to hurry
@@ -81,6 +83,39 @@ def candidates(conn, institution: Optional[str] = None) -> List[dict]:
                 out.append({"course_id": c["id"], "institution": c["institution"], "code": c["code"],
                             "course_title": c["title"], "domain": domain, **r})
     return out
+
+
+# --- is this page a syllabus of this course? ----------------------------------------------------------
+
+# URL words of pages that are never one course's syllabus; skipped before downloading.
+NOT_SYLLABUS_URL = re.compile(r"catalog|bulletin|transfer|directory|/jobs|schedule|flowchart|rhodemap|"
+                              r"audit|study-?plan|program-review|self-study", re.I)
+SIGNALS = [r"grading|grade (distribution|breakdown)", r"textbook|required (text|materials)|course materials",
+           r"office hours", r"learning outcomes|course objectives|student learning|you will be able to",
+           r"schedule|week \d|calendar", r"prerequisite", r"attendance", r"exam|midterm", r"homework|assignment",
+           r"instructor|professor"]
+MIN_SIGNALS = 3
+MAX_CODES = 20  # degree maps and catalogs list dozens of courses; a syllabus names a few
+
+
+def code_in(code: str, text: str) -> bool:
+    """'CS 380' in 'CS380_Syllabus.pdf', 'CS-380', 'cs 380' (but not 'CS 3801')."""
+    subj, num = code.split(" ", 1)
+    return re.search(rf"\b{re.escape(subj)}[\s_\-*]*{re.escape(num)}(?!\d)", text, re.I) is not None
+
+
+def assess(text: str, code: str, course_title: Optional[str], url: str,
+           page_title: Optional[str] = "") -> Optional[Tuple[float, str]]:
+    """(match confidence, method) if `text` reads like this course's syllabus, else None."""
+    if not code_in(code, f"{page_title} {url} {text[:2000]}"):
+        return None  # the course must be what the page is about, not a passing mention
+    if len(set(find_codes(text))) > MAX_CODES:
+        return None
+    if sum(bool(re.search(s, text, re.I)) for s in SIGNALS) < MIN_SIGNALS:
+        return None
+    if course_title and course_title.lower() in text.lower():
+        return 0.9, "code_and_title_in_text"
+    return 0.75, "code_in_text"
 
 
 def summary(found: List[dict]) -> Dict[str, Dict[str, int]]:

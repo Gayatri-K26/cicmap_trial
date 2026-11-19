@@ -30,3 +30,31 @@ def test_candidates_use_cached_results():
     found = websearch.candidates(c)
     assert [f["url"] for f in found] == [results[0]["url"]]
     assert websearch.summary(found) == {"Drexel University": {"courses": 1, "candidates": 1}}
+
+
+SYLLABUS = """CS 380: Artificial Intelligence - Fall 2024
+Instructor: Dr. Smith. Office hours: Tue 2-4pm.
+Prerequisite: CS 260 and CS 270.
+Textbook: Artificial Intelligence: A Modern Approach.
+Grading: Homework 40%, Midterm 25%, Final exam 35%.
+"""
+
+
+def test_assess_accepts_a_syllabus():
+    assert websearch.assess(SYLLABUS, "CS 380", "Artificial Intelligence", "https://x.edu/s.pdf") == \
+        (0.9, "code_and_title_in_text")
+    assert websearch.assess(SYLLABUS, "CS 380", "Intro to AI", "https://x.edu/s.pdf")[0] == 0.75
+
+
+def test_assess_rejects_lists_mentions_and_non_syllabi():
+    degree_map = "CS 380 AI\n" + "\n".join(f"CS {100 + i} Course" for i in range(30)) + "\ngrading exam homework"
+    assert websearch.assess(degree_map, "CS 380", None, "https://x.edu/map") is None       # lists many courses
+    late_mention = "Department news. " * 200 + SYLLABUS
+    assert websearch.assess(late_mention, "CS 380", None, "https://x.edu/news") is None    # course not up top
+    assert websearch.assess("CS 380 Artificial Intelligence. Fun!", "CS 380", None, "u") is None  # no signals
+
+
+def test_code_in_url_forms():
+    assert websearch.code_in("CS 380", "https://x.edu/CS380_Syllabus.pdf")
+    assert websearch.code_in("CS 380", "cs-380 notes")
+    assert not websearch.code_in("CS 380", "CS 3801")
