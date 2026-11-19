@@ -9,6 +9,7 @@ import logging
 import time
 from typing import Dict, Optional
 from urllib.parse import urlparse
+from urllib.robotparser import RobotFileParser
 
 import httpx
 
@@ -76,6 +77,29 @@ class Fetcher:
             return body
         raise BlockedError(f"Blocked even in the headless browser (HTTP {status}): {url}")
 
+    def get_rendered(self, url: str, settle_ms: int = 4000) -> str:
+        """A JavaScript-rendered page (e.g. a Simple Syllabus document), always loaded in the browser,
+        cached like any page. Only fetched if the site's robots.txt allows it."""
+        if not self.refresh:
+            row = self.conn.execute("SELECT body FROM raw_pages WHERE url = ? AND fetch_method = 'rendered' "
+                                    "AND status_code < 400", (url,)).fetchone()
+            if row:
+                return row["body"]
+        if not robots_allowed(url):
+            raise BlockedError(f"robots.txt disallows {url}")
+        if self._browser is None:
+            self._browser = BrowserSession()
+        try:
+            html, status, _ = self._browser.get(url, settle_ms=settle_ms)
+        except BrowserUnavailable as e:
+            raise BlockedError(f"{e} ({url})") from e
+        self.pages_fetched += 1
+        self.browser_fetches += 1
+        self._store(url, status, html, "rendered")
+        if status >= 400:
+            raise BlockedError(f"HTTP {status}: {url}")
+        return html
+
     def _http(self, url: str):
         host = urlparse(url).netloc
         wait = config.REQUEST_DELAY_SECONDS - (time.time() - self._last_hit.get(host, 0))
@@ -119,6 +143,28 @@ class Fetcher:
         if self._browser is not None and self._owns_browser:
             self._browser.close()
             self._browser = None
+
+
+ROBOTS_AGENT = "cicmap"
+_robots: Dict[str, Optional[RobotFileParser]] = {}
+
+
+def robots_allowed(url: str) -> bool:
+    """Whether the site's robots.txt lets a general crawler fetch `url` (cached per host for this run).
+    Used for syllabus sources; an unreachable robots.txt counts as allowed, as crawlers usually treat it."""
+    parts = urlparse(url)
+    host = f"{parts.scheme}://{parts.netloc}"
+    if host not in _robots:
+        rp = RobotFileParser()
+        try:
+            resp = httpx.get(f"{host}/robots.txt", timeout=15, follow_redirects=True,
+                             headers={"User-Agent": config.USER_AGENT})
+            rp.parse(resp.text.splitlines() if resp.status_code < 400 else [])
+            _robots[host] = rp
+        except httpx.HTTPError:
+            _robots[host] = None
+    rp = _robots[host]
+    return rp is None or rp.can_fetch(ROBOTS_AGENT, url)
 
 
 def looks_blocked(body: str) -> bool:

@@ -55,16 +55,17 @@ def save_document(conn, course_ids: Iterable[int], source_url: str, source_kind:
     lists outcomes (str), topics ({week, title, details}), assessments ({name, kind, weight_pct, details}),
     materials ({kind, title, authors, required})."""
     sid = conn.execute(
-        "INSERT INTO syllabi(source_url, source_kind, source_type, term, year, instructor, contact_hours, summary, "
-        "grading_scale, raw_text, parse_method, extra_json, extracted_at) "
-        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,datetime('now')) ON CONFLICT(source_url) DO UPDATE SET "
+        "INSERT INTO syllabi(source_url, source_kind, source_type, term, year, instructor, contact_hours, "
+        "delivery_mode, summary, grading_scale, raw_text, parse_method, extra_json, extracted_at) "
+        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,datetime('now')) ON CONFLICT(source_url) DO UPDATE SET "
         "source_kind=excluded.source_kind, source_type=excluded.source_type, term=excluded.term, year=excluded.year, "
-        "instructor=excluded.instructor, contact_hours=excluded.contact_hours, summary=excluded.summary, "
-        "grading_scale=excluded.grading_scale, raw_text=excluded.raw_text, parse_method=excluded.parse_method, "
-        "extra_json=excluded.extra_json, extracted_at=excluded.extracted_at RETURNING id",
+        "instructor=excluded.instructor, contact_hours=excluded.contact_hours, delivery_mode=excluded.delivery_mode, "
+        "summary=excluded.summary, grading_scale=excluded.grading_scale, raw_text=excluded.raw_text, "
+        "parse_method=excluded.parse_method, extra_json=excluded.extra_json, extracted_at=excluded.extracted_at "
+        "RETURNING id",
         (source_url, source_kind, source_type, doc.get("term"), doc.get("year"), doc.get("instructor"),
-         doc.get("contact_hours"), doc.get("summary"), doc.get("grading_scale"), doc.get("raw_text"), parse_method,
-         json.dumps(doc["extra"]) if doc.get("extra") else None)).fetchone()[0]
+         doc.get("contact_hours"), doc.get("delivery_mode"), doc.get("summary"), doc.get("grading_scale"),
+         doc.get("raw_text"), parse_method, json.dumps(doc["extra"]) if doc.get("extra") else None)).fetchone()[0]
     for t in ("syllabus_outcomes", "syllabus_topics", "syllabus_assessments", "syllabus_materials"):
         conn.execute(f"DELETE FROM {t} WHERE syllabus_id = ?", (sid,))
     conn.executemany("INSERT INTO syllabus_outcomes(syllabus_id, position, text) VALUES (?,?,?)",

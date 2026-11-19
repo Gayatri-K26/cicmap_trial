@@ -192,6 +192,25 @@ def _source_label(src: dict) -> str:
     return f"{src['source_kind']}{' ' + when if when else ''}: {src['source_url']}"
 
 
+@syllabus_app.command("portal")
+def syllabus_portal_cmd(school: Optional[str] = typer.Option(None, help="Only this school, e.g. 'purdue'."),
+                        refresh: bool = typer.Option(False, "--refresh", help="Reload pages instead of the cache."),
+                        verbose: bool = typer.Option(False, "-v", "--verbose")):
+    """Find syllabi in public Simple Syllabus libraries (Purdue, Middle Georgia State)."""
+    from .fetch import Fetcher
+    from . import simplesyllabus
+
+    conn = _conn()
+    fetcher = Fetcher(conn, refresh=refresh)
+    try:
+        c = simplesyllabus.discover(conn, fetcher, school,
+                                    progress=lambda m: typer.echo(f"    {m}") if verbose else None)
+    finally:
+        fetcher.close()
+    typer.echo(f"{c['found']} of {c['courses']} AI courses have a portal syllabus; {c['documents']} documents saved "
+               f"(pages loaded {fetcher.pages_fetched}).")
+
+
 @syllabus_app.command("show")
 def syllabus_show_cmd(school: str, code: str):
     """Show a course's combined syllabus: each section with the document it came from."""
