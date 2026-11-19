@@ -69,3 +69,36 @@ def test_profile_combines_sources(conn):
     assert s["materials"]["value"][0]["title"] == "Introduction to Data Mining"
     assert "instructor" in p["missing"] and "outcomes" not in p["missing"]
     assert [d["source_kind"] for d in p["documents"]] == ["faculty", "catalog"]  # real syllabi first
+
+
+def _two_schools(conn):
+    conn.execute("INSERT INTO institutions(id, name) VALUES (2, 'Other U')")
+    conn.execute("INSERT INTO courses(id, institution_id, code, title, description, is_ai) "
+                 "VALUES (3, 2, 'AI 300', 'Agents', 'Covers reinforcement learning.', 1)")
+    syllabi.load_catalog(conn)
+    syllabi.save_document(conn, [1], "a.pdf", "faculty", {"materials": [
+        {"title": "Artificial Intelligence: A Modern Approach (4th ed.)", "authors": "Russell, Norvig"}]}, 0.9, "x")
+    syllabi.save_document(conn, [3], "b.pdf", "faculty", {
+        "materials": [{"title": "Artificial Intelligence - A Modern Approach, 3rd edition"},
+                      {"title": "Deep Learning"}],
+        "topics": [{"week": "5", "title": "Mining association rules"}]}, 0.9, "x")
+
+
+def test_search_finds_topic_across_schools(conn):
+    _two_schools(conn)
+    found = {s["institution"]: s["courses"] for s in queries.search_syllabi(conn, "mining")}
+    assert [c["code"] for c in found["Test U"]] == ["CS 373"]
+    assert found["Test U"][0]["found_in"] == ["title"]
+    assert found["Other U"][0]["found_in"] == ["topics"]
+    data = {s["institution"]: s["courses"] for s in queries.search_syllabi(conn, "data")}
+    assert set(data["Test U"][0]["found_in"]) == {"title", "summary", "outcomes"}
+    assert [s["institution"] for s in queries.search_syllabi(conn, "reinforcement")] == ["Other U"]
+    assert queries.search_syllabi(conn, "Intro") == []  # CS 101 is not an AI course
+
+
+def test_common_materials_match_editions(conn):
+    _two_schools(conn)
+    common = queries.common_materials(conn)
+    assert len(common) == 1  # 'Deep Learning' is used at one school only
+    assert common[0]["school_count"] == 2
+    assert common[0]["schools"] == {"Other U": ["AI 300"], "Test U": ["CS 373"]}

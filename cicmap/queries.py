@@ -1,5 +1,6 @@
 """Read-side queries shared by the CLI and the UI. Everything returns plain dicts and lists."""
 import json
+import re
 from typing import Dict, List, Optional, Tuple
 
 
@@ -131,6 +132,51 @@ def syllabus_profile(conn, course_id: int) -> dict:
                 break
     return {"sections": sections, "missing": [n for n in PROFILE_SECTIONS if n not in sections],
             "documents": docs}
+
+
+def search_syllabi(conn, text: str) -> List[dict]:
+    """Which schools teach a topic: AI courses whose title, summary, outcomes or weekly topics mention `text`.
+    Returns one entry per school: {institution, courses: [{course_id, code, title, found_in: [...]}]}."""
+    like = f"%{text.strip()}%"
+    q = ("SELECT i.name AS institution, c.id AS course_id, c.code, c.title, x.section FROM ("
+         " SELECT id AS course_id, 'title' AS section FROM courses WHERE title LIKE :q"
+         " UNION SELECT sc.course_id, 'summary' FROM syllabi s JOIN syllabus_courses sc ON sc.syllabus_id = s.id"
+         "  WHERE s.summary LIKE :q"
+         " UNION SELECT sc.course_id, 'outcomes' FROM syllabus_outcomes o"
+         "  JOIN syllabus_courses sc ON sc.syllabus_id = o.syllabus_id WHERE o.text LIKE :q"
+         " UNION SELECT sc.course_id, 'topics' FROM syllabus_topics t"
+         "  JOIN syllabus_courses sc ON sc.syllabus_id = t.syllabus_id WHERE t.title LIKE :q OR t.details LIKE :q"
+         ") x JOIN courses c ON c.id = x.course_id JOIN institutions i ON i.id = c.institution_id "
+         "WHERE c.is_ai = 1 ORDER BY i.name, c.code")
+    schools: Dict[str, Dict[int, dict]] = {}
+    for r in conn.execute(q, {"q": like}):
+        course = schools.setdefault(r["institution"], {}).setdefault(
+            r["course_id"], {"course_id": r["course_id"], "code": r["code"], "title": r["title"], "found_in": []})
+        course["found_in"].append(r["section"])
+    return [{"institution": k, "courses": list(v.values())} for k, v in schools.items()]
+
+
+def _title_key(title: str) -> str:
+    """'Artificial Intelligence: A Modern Approach (4th ed.)' -> 'artificial intelligence a modern approach'."""
+    t = re.sub(r"\([^)]*\)", " ", title.lower())
+    t = re.sub(r"\b(\d+(st|nd|rd|th)|edition|ed)\b", " ", t)
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", t).split())
+
+
+def common_materials(conn, min_schools: int = 2) -> List[dict]:
+    """Textbooks and other materials used at `min_schools` or more schools, most widely used first."""
+    groups: Dict[str, dict] = {}
+    for r in conn.execute(
+            "SELECT m.title, m.authors, i.name AS institution, c.code FROM syllabus_materials m "
+            "JOIN syllabus_courses sc ON sc.syllabus_id = m.syllabus_id JOIN courses c ON c.id = sc.course_id "
+            "JOIN institutions i ON i.id = c.institution_id"):
+        g = groups.setdefault(_title_key(r["title"]), {"title": r["title"], "authors": r["authors"],
+                                                       "schools": {}})
+        g["schools"].setdefault(r["institution"], set()).add(r["code"])
+    out = [{"title": g["title"], "authors": g["authors"], "school_count": len(g["schools"]),
+            "schools": {k: sorted(v) for k, v in sorted(g["schools"].items())}}
+           for g in groups.values() if len(g["schools"]) >= min_schools]
+    return sorted(out, key=lambda g: (-g["school_count"], g["title"]))
 
 
 def totals(conn) -> dict:

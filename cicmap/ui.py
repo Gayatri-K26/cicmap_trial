@@ -109,7 +109,8 @@ def jobs_panel() -> None:
 with st.sidebar:
     st.title("cicmap")
     st.caption("AI courses and syllabi from university catalogs")
-    page = st.radio("Page", ["Browse", "Add program"], key="page", label_visibility="collapsed")
+    page = st.radio("Page", ["Browse", "Compare schools", "Add program"], key="page",
+                    label_visibility="collapsed")
     t = queries.totals(conn)
     c1, c2 = st.columns(2)
     c1.metric("Programs", f"{t['extracted']}/{t['programs']}")
@@ -273,6 +274,34 @@ def syllabi_view(course_id: int):
                 st.markdown(f"**Grading scale:** {s['grading_scale']}")
 
 
+# --- compare schools --------------------------------------------------------------------------------
+
+def compare_page():
+    st.header("Compare schools")
+    st.caption("Searches AI course titles, summaries, learning outcomes and weekly topics across every school.")
+    text = st.text_input("Which schools teach…", placeholder="reinforcement learning")
+    if text.strip():
+        found = queries.search_syllabi(conn, text)
+        total = len({s["institution"] for s in queries.sources(conn) if s["ai_courses"]})
+        st.markdown(f"**{len(found)} of {total} schools** have an AI course mentioning “{text.strip()}”.")
+        if found:
+            st.dataframe(pd.DataFrame([{
+                "School": s["institution"], "Courses": len(s["courses"]),
+                "Which": ", ".join(f"{c['code']} {c['title'] or ''}".strip() for c in s["courses"]),
+                "Found in": ", ".join(sorted({f for c in s["courses"] for f in c["found_in"]})),
+            } for s in found]), hide_index=True, width="stretch")
+
+    st.markdown("#### Textbooks used at more than one school")
+    common = queries.common_materials(conn)
+    if not common:
+        st.info("None yet. Catalogs don't list textbooks; syllabi found on the web will.")
+    else:
+        st.dataframe(pd.DataFrame([{
+            "Title": m["title"], "Authors": m["authors"] or "", "Schools": m["school_count"],
+            "Where": "; ".join(f"{k}: {', '.join(v)}" for k, v in m["schools"].items()),
+        } for m in common]), hide_index=True, width="stretch")
+
+
 # --- add program ------------------------------------------------------------------------------------
 
 def add_page():
@@ -313,6 +342,8 @@ def add_page():
 jobs_slot = st.container()  # at the top of the page, filled after the page (which may start a job)
 if page == "Browse":
     browse_page()
+elif page == "Compare schools":
+    compare_page()
 else:
     add_page()
 if jobs():

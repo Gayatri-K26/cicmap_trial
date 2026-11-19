@@ -205,6 +205,30 @@ def syllabus_show_cmd(school: str, code: str):
     typer.echo("\nNot found: " + (", ".join(SECTION_LABELS[n] for n in p["missing"]) or "-"))
 
 
+@syllabus_app.command("search")
+def syllabus_search_cmd(text: str = typer.Argument(..., help="A topic, e.g. 'reinforcement learning'.")):
+    """Which schools teach a topic (searches AI course titles, summaries, outcomes and weekly topics)."""
+    found = queries.search_syllabi(_conn(), text)
+    typer.echo(f"'{text}': {len(found)} schools\n")
+    for s in found:
+        typer.echo(s["institution"])
+        for c in s["courses"]:
+            typer.echo(f"    {c['code']}  {c['title'] or ''}  (in {', '.join(c['found_in'])})")
+
+
+@syllabus_app.command("textbooks")
+def syllabus_textbooks_cmd(min_schools: int = typer.Option(2, help="Used at this many schools or more.")):
+    """Textbooks and materials shared across schools."""
+    common = queries.common_materials(_conn(), min_schools)
+    if not common:
+        typer.echo(f"No material is listed by {min_schools}+ schools yet (catalogs don't list textbooks; "
+                   "syllabi found on the web will).")
+    for m in common:
+        typer.echo(f"{m['school_count']} schools  {m['title']}" + (f"  ({m['authors']})" if m["authors"] else ""))
+        for school, codes in m["schools"].items():
+            typer.echo(f"    {school}: {', '.join(codes)}")
+
+
 @app.command("ui")
 def ui_cmd(port: int = typer.Option(8501, help="Port for the web UI.")):
     """Open the web UI (Streamlit) in the browser."""
