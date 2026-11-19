@@ -132,6 +132,7 @@ class LLMFallbackAdapter(CatalogAdapter):
         self.program = program
         self.fetcher = None  # set by the pipeline; used to look up Coursedog course ids
         self._text = ""
+        self._entries: List[CurriculumEntry] = []
         self._id_codes: Dict[str, Optional[str]] = {}
 
     def detect(self, url: str, html: str) -> float:
@@ -166,7 +167,7 @@ class LLMFallbackAdapter(CatalogAdapter):
                 if e and e.code not in seen:
                     seen.add(e.code)
                     entries.append(e)
-        p.entries = entries
+        p.entries = self._entries = entries
         return p
 
     def _entry(self, c: dict, part: str, link_set) -> Optional[CurriculumEntry]:
@@ -195,7 +196,15 @@ class LLMFallbackAdapter(CatalogAdapter):
         start = _course_heading_pos(self._text, entry)
         if start is None:
             return None
-        snippet = self._text[start:start + SNIPPET_CHARS]
+        # Stop at the next course's own listing, so its code isn't read as part of this course's
+        # prerequisites (Hallmark: 'Prerequisite: ITAI-4440 | ITAI-4475 AI Capstone Project ...').
+        end = start + SNIPPET_CHARS
+        for other in self._entries:
+            if other.code != entry.code:
+                pos = _course_heading_pos(self._text, other)
+                if pos is not None and start < pos < end:
+                    end = pos
+        snippet = self._text[start:end]
         return self._extract(entry, snippet, None)
 
     def parse_course(self, entry: CurriculumEntry, url: str, html: str) -> CourseData:

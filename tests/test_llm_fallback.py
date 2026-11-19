@@ -100,6 +100,18 @@ def test_inline_course_snippet_starts_at_its_own_listing():
     assert c.code == "ITAI 3310"
 
 
+def test_inline_course_snippet_stops_at_next_course():
+    a = adapter({"llm_parse_program": {"program": {}, "courses": [
+                    {"code": "ITAI-4370", "title": "AI Practicum (Industry Project)"},
+                    {"code": "ITAI-4475", "title": "AI Capstone Project"}]},
+                 "llm_parse_course": {"code": "ITAI-4370", "title": "AI Practicum", "prereq_text": "ITAI-4440"}})
+    a.parse_program(HALLMARK, read("llm_hallmark_program.html"))
+    a.inline_course(CurriculumEntry(code="ITAI 4370", title="AI Practicum (Industry Project)"))
+    snippet = a.llm.prompts[-1][1].split("---\n", 1)[1].rsplit("\n---", 1)[0]
+    assert "ITAI-4440" in snippet
+    assert "ITAI-4475" not in snippet  # the next course's code used to be read as a prerequisite
+
+
 def test_coursedog_ids_resolved_and_retired_dropped():
     class FakeFetcher:
         def get(self, url):
