@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import typer
 
-from . import db, sheet
+from . import db, queries, sheet
 from .adapters import all_adapters
 from .browser import BrowserSession
 from .pipeline import extract_source
@@ -42,14 +42,10 @@ def sync_cmd(force: bool = typer.Option(False, "--force", help="Ignore the TTL a
 @app.command("add")
 def add_cmd(institution: str, program: str, url: str):
     """Add a program by hand (not from the sheet)."""
-    conn = _conn()
-    row = conn.execute("SELECT id FROM program_sources WHERE catalog_url = ?", (url,)).fetchone()
-    if row:
-        typer.echo(f"Already tracked as source {row['id']}")
+    sid, existed = queries.add_source(_conn(), institution, program, url)
+    if existed:
+        typer.echo(f"Already tracked as source {sid}")
         raise typer.Exit()
-    sid = conn.execute("INSERT INTO program_sources(institution, program, catalog_url, origin) "
-                       "VALUES (?, ?, ?, 'manual')", (institution, program, url)).lastrowid
-    conn.commit()
     typer.echo(f"Added source {sid}. Run: python -m cicmap extract {sid}")
 
 
@@ -121,35 +117,20 @@ def courses_cmd(school: str = typer.Argument(..., help="Part of an institution n
 @app.command("course")
 def course_cmd(school: str, code: str):
     """Show one course with its prerequisites and the courses that require it."""
-    conn = _conn()
-    c = conn.execute("SELECT c.*, i.name AS school FROM courses c JOIN institutions i ON i.id = c.institution_id "
-                     "WHERE i.name LIKE ? AND c.code = ?", (f"%{school}%", code.upper())).fetchone()
+    c = queries.find_course(_conn(), school, code)
     if not c:
         typer.echo("Not found.")
         raise typer.Exit(1)
-    typer.echo(f"{c['school']}  {c['code']}  {c['title']}  ({c['credits_text'] or '?'} credits)")
+    typer.echo(f"{c['institution']}  {c['code']}  {c['title']}  ({c['credits_text'] or '?'} credits)")
     typer.echo(f"AI: {bool(c['is_ai'])}  category={c['ai_category']}  confidence={c['ai_confidence']}  "
                f"[{c['ai_method']}] {c['ai_reason'] or ''}")
     typer.echo(f"\n{c['description'] or '(no description)'}\n")
     typer.echo(f"Prerequisite text: {c['prereq_text'] or '-'}")
-    for kind in ("prereq", "coreq"):
-        groups = {}
-        for r in conn.execute(
-                "SELECT p.group_no, p.min_grade, p.concurrent_ok, p.condition_text, t.code FROM course_prereqs p "
-                "LEFT JOIN courses t ON t.id = p.prereq_course_id WHERE p.course_id = ? AND p.kind = ? "
-                "ORDER BY p.group_no", (c["id"], kind)):
-            label = r["code"] or f"[{r['condition_text']}]"
-            if r["min_grade"]:
-                label += f" (min {r['min_grade']})"
-            if r["concurrent_ok"]:
-                label += " (concurrent ok)"
-            groups.setdefault(r["group_no"], []).append(label)
-        if groups:
-            typer.echo(f"Parsed {kind}s: " + "  AND  ".join("(" + " OR ".join(g) + ")" for g in groups.values()))
-    req_by = [r["code"] for r in conn.execute(
-        "SELECT DISTINCT c2.code FROM course_prereqs p JOIN courses c2 ON c2.id = p.course_id "
-        "WHERE p.prereq_course_id = ? ORDER BY c2.code", (c["id"],))]
-    typer.echo(f"Required by: {', '.join(req_by) or '-'}")
+    if c["prereqs"]:
+        typer.echo("Parsed prereqs: " + queries.format_groups(c["prereqs"]))
+    if c["coreqs"]:
+        typer.echo("Parsed coreqs: " + queries.format_groups(c["coreqs"]))
+    typer.echo(f"Required by: {', '.join(c['required_by']) or '-'}")
 
 
 @app.command("stats")
@@ -170,6 +151,18 @@ def parsers_cmd():
     """List registered catalog parsers."""
     for a in all_adapters():
         typer.echo(f"{a.name} v{a.version}  domains={', '.join(a.domains) or '-'}")
+
+
+@app.command("ui")
+def ui_cmd(port: int = typer.Option(8501, help="Port for the web UI.")):
+    """Open the web UI (Streamlit) in the browser."""
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    app_path = Path(__file__).with_name("ui.py")
+    raise typer.Exit(subprocess.call([sys.executable, "-m", "streamlit", "run", str(app_path),
+                                      "--server.port", str(port), "--browser.gatherUsageStats", "false"]))
 
 
 if __name__ == "__main__":
