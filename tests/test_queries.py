@@ -52,10 +52,30 @@ def test_course_prereqs_and_required_by(conn):
 
 def test_syllabi_with_children(conn):
     assert queries.syllabi(conn, 1) == []
-    sid = conn.execute("INSERT INTO syllabi(course_id, source_url, term, year) VALUES (1, 'u', 'Fall', 2026)").lastrowid
+    sid = conn.execute("INSERT INTO syllabi(source_url, term, year) VALUES ('u', 'Fall', 2026)").lastrowid
+    conn.execute("INSERT INTO syllabus_courses(syllabus_id, course_id, match_confidence) VALUES (?, 1, 0.9)", (sid,))
     conn.execute("INSERT INTO syllabus_outcomes(syllabus_id, position, text) VALUES (?, 1, 'Build agents')", (sid,))
     conn.execute("INSERT INTO syllabus_assessments(syllabus_id, name, weight_pct) VALUES (?, 'Final', 40)", (sid,))
     s = queries.syllabi(conn, 1)[0]
     assert s["outcomes"] == ["Build agents"]
-    assert s["assessments"][0]["weight_pct"] == 40
+    assert s["assessments"][0]["weight_pct"] == 40 and s["match_confidence"] == 0.9
     assert queries.totals(conn)["syllabi"] == 1
+
+
+def test_cross_listed_syllabus_belongs_to_both_courses(conn):
+    sid = conn.execute("INSERT INTO syllabi(source_url) VALUES ('cs480-580.pdf')").lastrowid
+    conn.executemany("INSERT INTO syllabus_courses(syllabus_id, course_id) VALUES (?, ?)", [(sid, 1), (sid, 4)])
+    assert [s["id"] for s in queries.syllabi(conn, 1)] == [sid] == [s["id"] for s in queries.syllabi(conn, 4)]
+    assert {c["code"]: c["syllabi"] for c in queries.ai_courses(conn, 1)} == {"CS 480": 1, "CS 580": 1}
+
+
+def test_migration_drops_empty_old_syllabi_table(tmp_path):
+    import sqlite3
+    path = tmp_path / "old.db"
+    old = sqlite3.connect(str(path))
+    old.execute("CREATE TABLE syllabi (id INTEGER PRIMARY KEY, course_id INTEGER, source_url TEXT)")
+    old.commit()
+    old.close()
+    c = db.connect(path)
+    cols = {r["name"] for r in c.execute("PRAGMA table_info(syllabi)")}
+    assert "course_id" not in cols and "source_kind" in cols

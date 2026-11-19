@@ -125,11 +125,14 @@ CREATE TABLE IF NOT EXISTS course_prereqs (
 CREATE INDEX IF NOT EXISTS idx_prereqs_course ON course_prereqs(course_id);
 CREATE INDEX IF NOT EXISTS idx_prereqs_target ON course_prereqs(prereq_course_id);
 
--- Syllabi: structured, with child tables, since schools vary in what they publish.
+-- Syllabi: one row per source document (the catalog entry, a professor's PDF, a course web page, ...).
+-- Every section is optional, since schools vary in what they publish; a course's syllabus profile combines
+-- the sections of all documents linked to it (see queries.syllabus_profile).
 CREATE TABLE IF NOT EXISTS syllabi (
     id               INTEGER PRIMARY KEY,
-    course_id        INTEGER NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
-    source_url       TEXT NOT NULL,
+    source_url       TEXT NOT NULL UNIQUE,
+    source_kind      TEXT NOT NULL DEFAULT 'web'
+                     CHECK (source_kind IN ('catalog', 'portal', 'department', 'faculty', 'web', 'manual')),
     source_type      TEXT,             -- 'html', 'pdf', 'docx'
     term             TEXT,             -- e.g. 'Fall'
     year             INTEGER,
@@ -141,13 +144,20 @@ CREATE TABLE IF NOT EXISTS syllabi (
     grading_scale    TEXT,
     raw_text         TEXT,             -- kept so syllabi can be re-parsed later
     document_hash    TEXT,
-    match_confidence REAL,             -- how sure we are this syllabus belongs to the course
-    match_method     TEXT,
-    parse_method     TEXT,
+    parse_method     TEXT,             -- 'deterministic' or 'llm'
     extra_json       TEXT,
-    extracted_at     TEXT NOT NULL DEFAULT (datetime('now')),
-    UNIQUE (course_id, source_url)
+    extracted_at     TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- Which courses a syllabus document belongs to. Usually one; several for cross-listed classes ('CS 471 / CS 571').
+CREATE TABLE IF NOT EXISTS syllabus_courses (
+    syllabus_id      INTEGER NOT NULL REFERENCES syllabi(id) ON DELETE CASCADE,
+    course_id        INTEGER NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    match_confidence REAL,             -- how sure we are this document belongs to the course
+    match_method     TEXT,             -- e.g. 'catalog', 'code_in_text', 'title_in_text'
+    PRIMARY KEY (syllabus_id, course_id)
+);
+CREATE INDEX IF NOT EXISTS idx_syllabus_courses_course ON syllabus_courses(course_id);
 
 CREATE TABLE IF NOT EXISTS syllabus_outcomes (
     id          INTEGER PRIMARY KEY,

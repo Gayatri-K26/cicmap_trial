@@ -44,7 +44,7 @@ def ai_courses(conn, program_id: int) -> List[dict]:
     return _rows(conn.execute(
         "SELECT c.id, c.code, c.title, c.credits_text AS credits, c.ai_category AS category, "
         "ROUND(c.ai_confidence, 2) AS confidence, pc.requirement_group, pc.is_alternative, "
-        "(SELECT COUNT(*) FROM syllabi s WHERE s.course_id = c.id) AS syllabi "
+        "(SELECT COUNT(*) FROM syllabus_courses sc WHERE sc.course_id = c.id) AS syllabi "
         "FROM program_courses pc JOIN courses c ON c.id = pc.course_id "
         "WHERE pc.program_id = ? AND c.is_ai = 1 ORDER BY c.code", (program_id,)))
 
@@ -91,10 +91,14 @@ def find_course(conn, school: str, code: str) -> Optional[dict]:
 
 
 def syllabi(conn, course_id: int) -> List[dict]:
-    """Syllabi for a course, each with its outcomes, topics, assessments and materials."""
+    """Syllabus documents linked to a course, best first, each with its outcomes, topics, assessments and
+    materials. Order: real syllabi before the catalog entry (they are more specific), then match confidence,
+    then the most recent term."""
     out = []
-    for s in _rows(conn.execute("SELECT * FROM syllabi WHERE course_id = ? ORDER BY year DESC, term",
-                                (course_id,))):
+    for s in _rows(conn.execute(
+            "SELECT s.*, sc.match_confidence, sc.match_method FROM syllabus_courses sc "
+            "JOIN syllabi s ON s.id = sc.syllabus_id WHERE sc.course_id = ? "
+            "ORDER BY s.source_kind = 'catalog', sc.match_confidence DESC, s.year DESC, s.id", (course_id,))):
         sid = s["id"]
         s["outcomes"] = [r["text"] for r in conn.execute(
             "SELECT text FROM syllabus_outcomes WHERE syllabus_id = ? ORDER BY position", (sid,))]

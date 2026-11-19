@@ -16,8 +16,25 @@ def connect(path: Optional[Path] = None) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.execute("PRAGMA journal_mode = WAL")
+    _migrate(conn)
     conn.executescript(SCHEMA_PATH.read_text())
     return conn
+
+
+SYLLABUS_TABLES = ("syllabus_outcomes", "syllabus_topics", "syllabus_assessments", "syllabus_materials", "syllabi")
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    """Syllabi used to hang off one course (syllabi.course_id); now documents link to courses through
+    syllabus_courses. The old tables were never filled, so they are dropped and recreated by the schema."""
+    cols = {r["name"] for r in conn.execute("PRAGMA table_info(syllabi)")}
+    if "course_id" not in cols:
+        return
+    if conn.execute("SELECT COUNT(*) FROM syllabi").fetchone()[0]:
+        raise RuntimeError("Old-style syllabi table has rows; migrate it by hand before upgrading.")
+    for t in SYLLABUS_TABLES:
+        conn.execute(f"DROP TABLE IF EXISTS {t}")
+    conn.commit()
 
 
 def get_state(conn: sqlite3.Connection, key: str) -> Optional[str]:
