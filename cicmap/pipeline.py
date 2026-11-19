@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional
 from urllib.parse import urlparse
 
-from . import db
+from . import db, syllabi
 from .adapters import select_adapter
 from .adapters.llm_fallback import TEMP_PREFIX, LLMFallbackAdapter
 from .browser import BrowserSession
@@ -46,6 +46,7 @@ def extract_source(conn, source_id: int, use_llm: bool = True, refresh: bool = F
     run_id = conn.execute("INSERT INTO extraction_runs(source_id, status) VALUES (?, 'running')",
                           (source_id,)).lastrowid
     conn.commit()
+    """Extract one program. Pass a shared `browser` to reuse one headless browser across many programs."""
     fetcher = Fetcher(conn, refresh=refresh, use_browser=use_browser, browser=browser)
     llm = LLM(conn, enabled=use_llm)
     adapter_name = None
@@ -233,6 +234,7 @@ def _store(conn, src, program: ProgramData, adapter, ai_courses: List[CourseData
         for i, cond in enumerate(p.get("conditions") or [], start=1):
             conn.execute("INSERT INTO course_prereqs(course_id, kind, group_no, condition_text, parse_method) "
                          "VALUES (?, 'prereq', ?, ?, ?)", (course_id, base + i, cond, p.get("method")))
+    syllabi.load_catalog(conn, [_course_id(conn, inst_id, c.code) for c in ai_courses])
 
 
 def _course_id(conn, inst_id: int, code: str) -> int:

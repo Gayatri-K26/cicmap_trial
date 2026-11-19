@@ -4,7 +4,7 @@ from typing import List, Optional
 
 import typer
 
-from . import db, queries, sheet
+from . import db, queries, sheet, syllabi
 from .adapters import all_adapters
 from .browser import BrowserSession
 from .pipeline import extract_source
@@ -151,6 +151,20 @@ def parsers_cmd():
     """List registered catalog parsers."""
     for a in all_adapters():
         typer.echo(f"{a.name} v{a.version}  domains={', '.join(a.domains) or '-'}")
+
+
+syllabus_app = typer.Typer(help="Syllabus documents: load, discover and show.", no_args_is_help=True)
+app.add_typer(syllabus_app, name="syllabus")
+
+
+@syllabus_app.command("catalog")
+def syllabus_catalog_cmd():
+    """Store every AI course's catalog entry (description, outcomes, hours) as a syllabus document.
+    New extractions do this automatically; run it once for courses extracted earlier."""
+    conn = _conn()
+    n = syllabi.load_catalog(conn)
+    conn.commit()
+    typer.echo(f"Saved {n} catalog syllabus documents.")
 
 
 @app.command("ui")
