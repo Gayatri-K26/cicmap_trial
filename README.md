@@ -61,9 +61,17 @@ saved sample page plus a test in `tests/`. Bump `version` when parsing changes.
 | CourseLeaf | Drexel, Illinois Tech | extracted |
 | SmartCatalog | Kean, Marymount, Middle Georgia State, Rhode Island | extracted |
 | Acalog | Capitol Tech, Dakota State, Ferris, Harding, Purdue | extracted (program page via headless browser) |
-| Coursedog | BYU | needs parser |
-| Custom sites | Hallmark, Miami | needs parser (LLM fallback planned) |
+| Coursedog | BYU | extracted (LLM fallback; course ids resolved from course pages) |
+| Custom sites | Hallmark | extracted (LLM fallback; details read inline from the program page) |
+| Custom sites → CourseLeaf | Miami | extracted (LLM fallback finds the full course list, then CourseLeaf parses it) |
 
-Known gaps: Purdue's catalog shows no prerequisites on course pages; Acalog pages don't name the college.
+All 14 programs in the sheet extract: 153 AI courses, 266 prerequisite links.
+
+**LLM fallback** ([cicmap/adapters/llm_fallback.py](cicmap/adapters/llm_fallback.py)): used only when no
+deterministic parser matches and the LLM is on. A course is kept only if its code or title is on the page, and a
+link only if it is a real link on the page. A deterministic parser is still preferable when a platform recurs.
+
+Known gaps: Purdue's catalog shows no prerequisites on course pages; Acalog pages and BYU don't name the college;
+Hallmark lists no credits.
 
 Tests: `.venv/bin/pytest`
