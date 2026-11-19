@@ -36,7 +36,9 @@ def parse_batch(llm: LLM, courses: Dict[str, Dict[str, Optional[str]]]) -> Dict[
     out = {code: {"prereq": regex_parse(t.get("prereq_text")), "coreq": regex_parse(t.get("coreq_text")),
                   "conditions": [], "method": "regex"}
            for code, t in courses.items()}
-    todo = {c: t for c, t in courses.items() if t.get("prereq_text") or t.get("coreq_text")}
+    # Uppercase 'OR'/'AND' (Miami) was misread as AND; lowercase them before asking.
+    todo = {c: {k: _lower_conjunctions(v) for k, v in t.items()}
+            for c, t in courses.items() if t.get("prereq_text") or t.get("coreq_text")}
     if not llm.enabled or not todo:
         return out
     system = ("You convert university course prerequisite text into structured data. Answer with JSON only. "
@@ -44,12 +46,14 @@ def parse_batch(llm: LLM, courses: Dict[str, Dict[str, Optional[str]]]) -> Dict[
               "alternatives where any one satisfies it. Normalize course codes as 'SUBJ 123' (e.g. 'CPS*2800' -> "
               "'CPS 2800'). Put non-course requirements (class standing, major restrictions, permission, test "
               "scores) in 'conditions' as short strings. Mark concurrent_ok true when the text says the course "
-              "may be taken concurrently.")
+              "may be taken concurrently. Example: 'CS 101 or CS 102, and MATH 120' -> prereq "
+              "[[CS 101, CS 102], [MATH 120]]; 'CS 232 or CS 271' -> [[CS 232, CS 271]] (one group, two "
+              "alternatives); 'CS 101 and CS 102' -> [[CS 101], [CS 102]].")
     user = (f"{json.dumps(todo, ensure_ascii=False)}\n\n"
             'Return {"courses": {"<code>": {"prereq": [[{"code": str, "min_grade": str|null, '
             '"concurrent_ok": bool}]], "coreq": [[...same...]], "conditions": [str]}}} for every code.')
     try:
-        data = llm.json("parse_prereqs", 1, system, user, max_tokens=6000)
+        data = llm.json("parse_prereqs", 2, system, user, max_tokens=6000)
         for code, parsed in (data.get("courses") or {}).items():
             if code not in out or not isinstance(parsed, dict):
                 continue
@@ -62,14 +66,24 @@ def parse_batch(llm: LLM, courses: Dict[str, Dict[str, Optional[str]]]) -> Dict[
     return out
 
 
+def _lower_conjunctions(text: Optional[str]) -> Optional[str]:
+    return re.sub(r"\b(OR|AND)\b", lambda m: m.group(1).lower(), text) if text else text
+
+
 def _clean_groups(groups) -> List[List[dict]]:
     clean = []
     for g in groups or []:
         if isinstance(g, dict):
             g = [g]
         opts = []
+        if isinstance(g, str):
+            g = [g]
         for o in g or []:
-            code = normalize_code(str((o or {}).get("code", "")))
+            if isinstance(o, str):  # the model sometimes lists bare codes instead of objects
+                o = {"code": o}
+            if not isinstance(o, dict):
+                continue
+            code = normalize_code(str(o.get("code", "")))
             if code:
                 opts.append({"code": code, "min_grade": (o.get("min_grade") or None),
                              "concurrent_ok": bool(o.get("concurrent_ok"))})
