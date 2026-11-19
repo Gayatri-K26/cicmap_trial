@@ -146,6 +146,21 @@ def stats_cmd():
     _table([dict(r) for r in rows], ["school", "degree", "adapter", "ai_courses", "prereq_edges", "college"])
 
 
+@app.command("check")
+def check_cmd():
+    """Look for prerequisite loops (A needs B, B needs A), which point to a parsing or catalog error."""
+    conn = _conn()
+    names = {r["id"]: r["name"] for r in conn.execute("SELECT id, name FROM institutions")}
+    found = 0
+    for inst_id, name in names.items():
+        for cy in queries.prereq_cycles(conn, inst_id):
+            found += 1
+            typer.echo(f"{name}: {' -> '.join(cy)}")
+    typer.echo("No prerequisite loops." if not found else f"\n{found} loop(s) found.")
+    if found:
+        raise typer.Exit(1)
+
+
 @app.command("parsers")
 def parsers_cmd():
     """List registered catalog parsers."""

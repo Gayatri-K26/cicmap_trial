@@ -79,3 +79,16 @@ def test_migration_drops_empty_old_syllabi_table(tmp_path):
     c = db.connect(path)
     cols = {r["name"] for r in c.execute("PRAGMA table_info(syllabi)")}
     assert "course_id" not in cols and "source_kind" in cols
+
+
+def test_prereq_cycles(conn):
+    assert queries.prereq_cycles(conn) == []  # CS 480 -> CS 331/CS 401, CS 580 -> CS 480: no loop
+    conn.execute("INSERT INTO course_prereqs(course_id, kind, group_no, prereq_course_id) VALUES (2, 'prereq', 1, 4)")
+    assert queries.prereq_cycles(conn) == [["CS 480", "CS 331", "CS 580", "CS 480"]]
+    assert queries.prereq_cycles(conn, institution_id=99) == []
+
+
+def test_mutual_corequisites_are_not_a_loop(conn):
+    conn.executemany("INSERT INTO course_prereqs(course_id, kind, group_no, prereq_course_id) "
+                     "VALUES (?, 'coreq', 1, ?)", [(1, 4), (4, 1)])  # lecture and lab list each other
+    assert queries.prereq_cycles(conn) == []

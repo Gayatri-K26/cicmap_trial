@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional
 from urllib.parse import urlparse
 
-from . import db, syllabi
+from . import db, queries, syllabi
 from .adapters import select_adapter
 from .adapters.llm_fallback import TEMP_PREFIX, LLMFallbackAdapter
 from .browser import BrowserSession
@@ -110,6 +110,10 @@ def extract_source(conn, source_id: int, use_llm: bool = True, refresh: bool = F
         titles = {code: e.title for code, e in entries.items() if not code.startswith(TEMP_PREFIX)}
         _store(conn, src, program, adapter, ai_courses, verdicts, parsed, titles, entries)
         msg = f"{len(ai_courses)} AI courses out of {len(program.entries)} in the curriculum"
+        inst_id = db.get_or_create_institution(conn, src["institution"])
+        loops = queries.prereq_cycles(conn, inst_id)
+        if loops:  # stored anyway, but flagged: a real curriculum has no prerequisite loops
+            msg += "; WARNING prerequisite loop: " + "; ".join(" -> ".join(cy) for cy in loops)
         res = _finish(conn, run_id, src, "extracted", msg, fetcher, llm, adapter_name)
         res.ai_courses, res.curriculum_courses = len(ai_courses), len(program.entries)
         return res

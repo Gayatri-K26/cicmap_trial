@@ -72,6 +72,37 @@ def format_groups(groups: List[List[str]]) -> str:
     return "  AND  ".join("(" + " OR ".join(g) + ")" if len(g) > 1 else g[0] for g in groups)
 
 
+def prereq_cycles(conn, institution_id: Optional[int] = None) -> List[List[str]]:
+    """Prerequisite loops (A needs B ... needs A), each as codes like ['CS 1', 'CS 2', 'CS 1'].
+    A real curriculum has none, so a loop means a parsing or catalog error. Corequisites are left out:
+    a lecture and its lab may each list the other."""
+    edges: Dict[int, List[int]] = {}
+    codes: Dict[int, str] = {}
+    for r in conn.execute(
+            "SELECT p.course_id, p.prereq_course_id, a.code AS a_code, b.code AS b_code FROM course_prereqs p "
+            "JOIN courses a ON a.id = p.course_id JOIN courses b ON b.id = p.prereq_course_id "
+            "WHERE p.kind = 'prereq' AND (:inst IS NULL OR a.institution_id = :inst)", {"inst": institution_id}):
+        edges.setdefault(r["course_id"], []).append(r["prereq_course_id"])
+        codes[r["course_id"]], codes[r["prereq_course_id"]] = r["a_code"], r["b_code"]
+    cycles, state, path = [], {}, []
+
+    def visit(u):
+        state[u] = "open"
+        path.append(u)
+        for v in edges.get(u, []):
+            if state.get(v) == "open":
+                cycles.append([codes[x] for x in path[path.index(v):]] + [codes[v]])
+            elif v not in state:
+                visit(v)
+        path.pop()
+        state[u] = "done"
+
+    for u in list(edges):
+        if u not in state:
+            visit(u)
+    return cycles
+
+
 def course(conn, course_id: int) -> Optional[dict]:
     r = conn.execute("SELECT c.*, i.name AS institution FROM courses c "
                      "JOIN institutions i ON i.id = c.institution_id WHERE c.id = ?", (course_id,)).fetchone()
