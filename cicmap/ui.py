@@ -6,6 +6,7 @@ Pages:
   * Add program: track a new university program and extract it. A program already extracted is shown
     from the cache instead of being extracted again.
 """
+import re
 import sys
 import threading
 from pathlib import Path
@@ -198,8 +199,7 @@ def course_panel(course_id: int):
 
     with details:
         st.markdown(c["description"] or "_No description on the catalog page._")
-        st.markdown(f"**AI category:** {c['ai_category'] or '—'} · **confidence:** {c['ai_confidence'] or '—'} "
-                    f"· **method:** {c['ai_method']}  \n**Why:** {c['ai_reason'] or '—'}")
+        st.markdown(f"**AI category:** {(c['ai_category'] or 'not set').replace('_', ' ').capitalize()}")
         if c["restrictions"]:
             st.markdown(f"**Restrictions:** {c['restrictions']}")
         offered = "; ".join(c["extra"][k] for k in ("When Taught", "Term Offered") if c["extra"].get(k))
@@ -210,19 +210,36 @@ def course_panel(course_id: int):
             with st.expander("Other catalog info"):
                 for k, v in other.items():
                     st.markdown(f"**{k}:** {v}")
+        with st.expander("Why this counts as an AI course"):
+            conf = f"{c['ai_confidence']:.2f}" if c["ai_confidence"] is not None else "—"
+            decided = "DeepSeek" if c["ai_method"] == "llm" else "keyword match"
+            st.markdown(f"{c['ai_reason'] or '—'}  \n<small>Decided by {decided} · confidence {conf}</small>",
+                        unsafe_allow_html=True)
 
     with prereqs:
-        st.markdown(f"**As written:** {c['prereq_text'] or '—'}")
-        if c["coreq_text"]:
-            st.markdown(f"**Corequisites as written:** {c['coreq_text']}")
-        st.markdown("**Parsed:** " + (queries.format_groups(c["prereqs"]) or "—"))
-        if c["coreqs"]:
-            st.markdown("**Parsed corequisites:** " + queries.format_groups(c["coreqs"]))
-        st.markdown("**Required by:** " + (", ".join(c["required_by"]) or "—"))
-        st.caption("Groups are joined by AND; options inside parentheses are alternatives (OR).")
+        requirement_lines("Requires", c["prereqs"], c["prereq_text"])
+        if c["coreqs"] or c["coreq_text"]:
+            requirement_lines("Take at the same time", c["coreqs"], c["coreq_text"])
+        st.markdown("**Needed for:** " + (", ".join(c["required_by"]) or "no other extracted course"))
 
     with syll:
         syllabi_view(course_id)
+
+
+def _plain(text: str) -> str:
+    return " ".join(re.sub(r"[^a-z0-9]+", " ", text.lower()).split())
+
+
+def requirement_lines(label: str, groups, written) -> None:
+    """'Requires: CS 101 or CS 102, and MATH 120', plus the catalog wording only when it says more."""
+    if groups:
+        many = len(groups) > 1
+        readable = ", and ".join(f"({' or '.join(g)})" if many and len(g) > 1 else " or ".join(g) for g in groups)
+    else:
+        readable = written or "none listed"
+    st.markdown(f"**{label}:** {readable}")
+    if groups and written and _plain(written) != _plain(readable):
+        st.caption(f"Catalog wording: {written}")
 
 
 SECTION_LABELS = {"summary": "Summary", "outcomes": "Learning outcomes", "topics": "Weekly topics",
