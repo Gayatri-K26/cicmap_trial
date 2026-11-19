@@ -15,8 +15,27 @@ def clean(s: Optional[str]) -> Optional[str]:
     return s or None
 
 
+# BYU-style subjects written with spaces: 'C S 111', 'EC EN 220', 'A HTG 100'.
+_SPACED_SUBJECT_RE = re.compile(r"\b((?:[A-Z]{1,2} ){1,3}[A-Z]{1,5}) (?=\d{3,5}[A-Z]?\b)")
+_NOT_SUBJECT = {"OR", "AND", "IN", "OF", "TO", "NOR", "ON", "AT", "BY"}
+
+
+def join_spaced_subjects(text: Optional[str]) -> Optional[str]:
+    """'C S 111 or EC EN 220' -> 'CS 111 or ECEN 220'. Leaves 'OR CS 235' alone."""
+    if not text:
+        return text
+
+    def fix(m):
+        words = m.group(1).split(" ")
+        if any(w in _NOT_SUBJECT for w in words):
+            return m.group(0)
+        return "".join(words) + " "
+    return _SPACED_SUBJECT_RE.sub(fix, text)
+
+
 def normalize_code(raw: str) -> Optional[str]:
-    m = CODE_RE.search((raw or "").replace("\u00a0", " ").upper())
+    raw = join_spaced_subjects((raw or "").replace("\u00a0", " ").strip().upper())
+    m = CODE_RE.search(raw)
     return f"{m.group(1)} {m.group(2)}" if m else None
 
 
