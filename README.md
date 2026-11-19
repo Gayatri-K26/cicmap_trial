@@ -13,6 +13,21 @@ echo "DEEPSEEK_API_KEY=sk-..." > .env      # never commit this file
 
 ## Usage
 
+### Web UI
+
+```bash
+.venv/bin/python -m cicmap ui     # opens http://localhost:8501
+```
+
+- **Browse:** every program with its status; click one to see its cached AI courses, then a course for its
+  description, prerequisites (as written and parsed), the courses that require it, and its syllabi. Reads the
+  database only.
+- **Add program:** university, program and catalog URL. A URL already extracted shows the cached result;
+  otherwise extraction runs in the background (you can keep browsing) with live progress.
+- **Sync from Google Sheet** in the sidebar pulls new or edited rows.
+
+### CLI
+
 ```bash
 .venv/bin/python -m cicmap sync              # pull the program list from the Google Sheet
 .venv/bin/python -m cicmap sources           # list programs and their status
