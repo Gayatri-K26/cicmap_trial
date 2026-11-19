@@ -3,6 +3,8 @@ import json
 import re
 from typing import Dict, List, Optional, Tuple
 
+from .syllabi import is_syllabus_label
+
 
 def _rows(cur) -> List[dict]:
     return [dict(r) for r in cur]
@@ -76,7 +78,9 @@ def course(conn, course_id: int) -> Optional[dict]:
     if not r:
         return None
     c = dict(r)
-    c["extra"] = json.loads(c["extra_json"]) if c.get("extra_json") else {}
+    extra = json.loads(c["extra_json"]) if c.get("extra_json") else {}
+    # Labels the syllabus uses (outcomes, hours) are shown there, not repeated with the course details.
+    c["extra"] = {k: v for k, v in extra.items() if not is_syllabus_label(k)}
     c["prereqs"] = prereq_groups(conn, course_id, "prereq")
     c["coreqs"] = prereq_groups(conn, course_id, "coreq")
     c["required_by"] = [x["code"] for x in conn.execute(
@@ -114,18 +118,20 @@ def syllabi(conn, course_id: int) -> List[dict]:
 
 
 PROFILE_SECTIONS = ("summary", "outcomes", "topics", "assessments", "materials", "instructor", "contact_hours",
-                    "grading_scale", "offered")
+                    "grading_scale")
 
 
 def syllabus_profile(conn, course_id: int) -> dict:
     """One combined syllabus per course: each section taken from the best document that has it
-    (documents are already ordered best first), with its source, plus the sections nobody provided."""
+    (documents are already ordered best first), with its source, plus the sections nobody provided.
+    The summary comes only from real syllabi: the catalog description is already the course description."""
     docs = syllabi(conn, course_id)
     sections = {}
     for name in PROFILE_SECTIONS:
         for d in docs:
-            value = (json.loads(d["extra_json"]) if d.get("extra_json") else {}).get(name) \
-                if name == "offered" else d.get(name)
+            if name == "summary" and d["source_kind"] == "catalog":
+                continue
+            value = d.get(name)
             if value:
                 sections[name] = {"value": value, "source": {k: d[k] for k in (
                     "id", "source_kind", "source_url", "term", "year", "match_confidence")}}

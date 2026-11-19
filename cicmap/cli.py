@@ -169,7 +169,7 @@ def syllabus_catalog_cmd():
 
 SECTION_LABELS = {"summary": "Summary", "outcomes": "Learning outcomes", "topics": "Weekly topics",
                   "assessments": "Grading", "materials": "Textbooks and materials", "instructor": "Instructor",
-                  "contact_hours": "Contact hours", "grading_scale": "Grading scale", "offered": "Terms offered"}
+                  "contact_hours": "Contact hours", "grading_scale": "Grading scale"}
 
 
 def _source_label(src: dict) -> str:

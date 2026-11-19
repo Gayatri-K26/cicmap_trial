@@ -9,9 +9,13 @@ import json
 import re
 from typing import Iterable, List, Optional
 
-# Catalog labels (as stored in courses.extra_json) -> syllabus fields.
+# Catalog labels (as stored in courses.extra_json) that describe how a course is taught go to the syllabus;
+# everything else stays with the course details. Add a school's label variant here.
 HOURS_LABELS = ("Lecture", "Lecture Hours", "Class Hours", "Lab", "Lab Hours", "Laboratory Hours")
-OFFERED_LABELS = ("When Taught", "Term Offered")
+
+
+def is_syllabus_label(label: str) -> bool:
+    return "outcome" in label.lower() or label in HOURS_LABELS
 
 _NUMBERED = re.compile(r"(?:^|(?<=\s))(\d{1,2})[.)]\s+")
 
@@ -40,9 +44,7 @@ def catalog_document(course: dict) -> dict:
     for label in sorted((k for k in extra if "outcome" in k.lower()), key=lambda k: "title" not in k.lower()):
         outcomes += split_outcomes(extra[label])
     hours = ", ".join(f"{k}: {extra[k]}" for k in HOURS_LABELS if extra.get(k))
-    offered = "; ".join(extra[k] for k in OFFERED_LABELS if extra.get(k))
-    return {"summary": course.get("description"), "outcomes": outcomes, "contact_hours": hours or None,
-            "extra": {"offered": offered} if offered else {}}
+    return {"summary": course.get("description"), "outcomes": outcomes, "contact_hours": hours or None}
 
 
 def save_document(conn, course_ids: Iterable[int], source_url: str, source_kind: str, doc: dict,

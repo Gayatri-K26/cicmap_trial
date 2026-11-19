@@ -202,8 +202,14 @@ def course_panel(course_id: int):
                     f"· **method:** {c['ai_method']}  \n**Why:** {c['ai_reason'] or '—'}")
         if c["restrictions"]:
             st.markdown(f"**Restrictions:** {c['restrictions']}")
-        for k, v in c["extra"].items():
-            st.markdown(f"**{k}:** {v}")
+        offered = "; ".join(c["extra"][k] for k in ("When Taught", "Term Offered") if c["extra"].get(k))
+        if offered:
+            st.markdown(f"**Terms offered:** {offered}")
+        other = {k: v for k, v in c["extra"].items() if k not in ("When Taught", "Term Offered")}
+        if other:
+            with st.expander("Other catalog info"):
+                for k, v in other.items():
+                    st.markdown(f"**{k}:** {v}")
 
     with prereqs:
         st.markdown(f"**As written:** {c['prereq_text'] or '—'}")
@@ -221,7 +227,7 @@ def course_panel(course_id: int):
 
 SECTION_LABELS = {"summary": "Summary", "outcomes": "Learning outcomes", "topics": "Weekly topics",
                   "assessments": "Grading", "materials": "Textbooks and materials", "instructor": "Instructor",
-                  "contact_hours": "Contact hours", "grading_scale": "Grading scale", "offered": "Terms offered"}
+                  "contact_hours": "Contact hours", "grading_scale": "Grading scale"}
 
 
 def syllabi_view(course_id: int):
@@ -233,8 +239,6 @@ def syllabi_view(course_id: int):
     st.markdown("#### Combined syllabus")
     st.caption("Each section comes from the best source that has it. Real syllabi rank above the catalog entry.")
     for name, sec in p["sections"].items():
-        if name == "summary":
-            continue  # shown on the Details tab
         src = sec["source"]
         when = " ".join(str(x) for x in (src["term"], src["year"]) if x)
         st.markdown(f"**{SECTION_LABELS[name]}** <small>· from [{src['source_kind']}{' ' + when if when else ''}]"

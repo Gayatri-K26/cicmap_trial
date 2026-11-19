@@ -30,7 +30,7 @@ def test_catalog_document_maps_labels():
     assert doc["summary"] == "Intro to ML."
     assert doc["outcomes"] == ["Fit models.", "Evaluate them."]
     assert doc["contact_hours"] == "Lecture: 3, Lab: 0"
-    assert doc["extra"] == {"offered": "Fall and Winter"}
+    assert "extra" not in doc  # terms offered stay with the course details
 
 
 @pytest.fixture
@@ -55,6 +55,18 @@ def test_load_catalog_is_idempotent(conn):
     assert (d["source_kind"], d["match_method"], d["match_confidence"]) == ("catalog", "catalog", 1.0)
     assert d["outcomes"] == ["Mine data.", "Choose algorithms."] and d["summary"] == "Patterns in data."
     assert queries.syllabi(conn, 2) == []
+
+
+def test_each_fact_shown_once(conn):
+    conn.execute("UPDATE courses SET extra_json = ? WHERE id = 1", (json.dumps(
+        {"Learning Outcomes": "1. Mine data. 2. Choose.", "Lecture": "3", "When Taught": "Fall"}),))
+    syllabi.load_catalog(conn)
+    assert queries.course(conn, 1)["extra"] == {"When Taught": "Fall"}  # outcomes and hours go to the syllabus
+    p = queries.syllabus_profile(conn, 1)
+    assert "summary" in p["missing"]  # the catalog description is not repeated as a syllabus summary
+    assert p["sections"]["contact_hours"]["value"] == "Lecture: 3"
+    syllabi.save_document(conn, [1], "s.pdf", "faculty", {"summary": "Fuller overview."}, 0.9, "x")
+    assert queries.syllabus_profile(conn, 1)["sections"]["summary"]["value"] == "Fuller overview."
 
 
 def test_profile_combines_sources(conn):
