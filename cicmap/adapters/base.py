@@ -32,6 +32,10 @@ class CatalogAdapter:
     def parse_course(self, entry: CurriculumEntry, url: str, html: str) -> CourseData:
         raise NotImplementedError
 
+    def inline_course(self, entry: CurriculumEntry) -> Optional[CourseData]:
+        """Course details found on the program page itself (no separate course page). None by default."""
+        return None
+
 
 def register(cls: Type[CatalogAdapter]) -> Type[CatalogAdapter]:
     if not cls.name:

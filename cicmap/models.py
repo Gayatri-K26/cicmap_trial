@@ -25,6 +25,8 @@ class ProgramData(BaseModel):
     description: Optional[str] = None
     entries: List[CurriculumEntry] = Field(default_factory=list)
     header_text: Optional[str] = None  # top-of-page text, used to fill metadata gaps with the LLM
+    # Set when this page only summarizes the curriculum and links to the full list elsewhere.
+    curriculum_url: Optional[str] = None
 
 
 class CourseData(BaseModel):

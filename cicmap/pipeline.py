@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 
 from . import db
 from .adapters import select_adapter
+from .adapters.llm_fallback import TEMP_PREFIX, LLMFallbackAdapter
 from .browser import BrowserSession
 from .ai_filter import classify_details, screen_titles
 from .fetch import BlockedError, Fetcher
@@ -52,13 +53,32 @@ def extract_source(conn, source_id: int, use_llm: bool = True, refresh: bool = F
         progress(f"Fetching {src['catalog_url']}")
         html = fetcher.get(src["catalog_url"])
 
-        adapter, why = select_adapter(src["catalog_url"], html, src["adapter_override"])
+        page_url = src["catalog_url"]
+        adapter, why = _pick_adapter(src, page_url, html, llm, fetcher)
         if not adapter:
             return _finish(conn, run_id, src, "needs_parser", f"No parser for this page ({why})", fetcher, llm)
         adapter_name = adapter.name
         progress(f"Parser: {adapter.name} ({why})")
 
-        program = adapter.parse_program(src["catalog_url"], html)
+        program = adapter.parse_program(page_url, html)
+        if program.curriculum_url:
+            # The page only summarizes the curriculum; follow its link to the full list once.
+            page_url = program.curriculum_url
+            progress(f"Following full course list: {page_url}")
+            html = fetcher.get(page_url)
+            summary = program
+            adapter, why = _pick_adapter(src, page_url, html, llm, fetcher)
+            if not adapter:
+                return _finish(conn, run_id, src, "needs_parser", f"No parser for {page_url} ({why})",
+                               fetcher, llm, adapter_name)
+            adapter_name = adapter.name
+            progress(f"Parser: {adapter.name} ({why})")
+            program = adapter.parse_program(page_url, html)
+            program.curriculum_url = None
+            for f in ("degree", "degree_full", "college", "department", "catalog_year", "total_credits",
+                      "description"):
+                if not getattr(program, f):
+                    setattr(program, f, getattr(summary, f))
         if not program.entries:
             return _finish(conn, run_id, src, "needs_parser",
                            f"Parser '{adapter.name}' found no courses; page layout may have changed",
@@ -71,17 +91,23 @@ def extract_source(conn, source_id: int, use_llm: bool = True, refresh: bool = F
         progress(f"{len(candidates)} candidates; fetching course details")
 
         details: List[CourseData] = []
+        entries = {e.code: e for e in program.entries}
         for e in candidates:
-            details.append(_course_details(adapter, fetcher, src["catalog_url"], e))
+            c = _course_details(adapter, fetcher, page_url, e)
+            if c.code.startswith(TEMP_PREFIX):
+                log.warning("no course code found for %s (%s)", e.title, e.detail_url)
+                continue
+            if c.code != e.code:  # code learned from the course page (e.g. BYU)
+                entries[c.code] = entries.pop(e.code)
+            details.append(c)
         verdicts = classify_details(llm, src["program"], details)
         ai_courses = [c for c in details if verdicts[c.code]["is_ai"]]
         progress(f"{len(ai_courses)} AI courses; parsing prerequisites")
 
         parsed = parse_batch(llm, {c.code: {"prereq_text": c.prereq_text, "coreq_text": c.coreq_text}
                                    for c in ai_courses})
-        titles = {e.code: e.title for e in program.entries}
-        _store(conn, src, program, adapter, ai_courses, verdicts, parsed, titles,
-               {e.code: e for e in program.entries})
+        titles = {code: e.title for code, e in entries.items() if not code.startswith(TEMP_PREFIX)}
+        _store(conn, src, program, adapter, ai_courses, verdicts, parsed, titles, entries)
         msg = f"{len(ai_courses)} AI courses out of {len(program.entries)} in the curriculum"
         res = _finish(conn, run_id, src, "extracted", msg, fetcher, llm, adapter_name)
         res.ai_courses, res.curriculum_courses = len(ai_courses), len(program.entries)
@@ -96,7 +122,26 @@ def extract_source(conn, source_id: int, use_llm: bool = True, refresh: bool = F
         fetcher.close()
 
 
+def _pick_adapter(src, url: str, html: str, llm: LLM, fetcher: Fetcher):
+    """Deterministic parser if one matches; otherwise the LLM fallback when the LLM is on."""
+    adapter, why = select_adapter(url, html, src["adapter_override"])
+    if adapter is None and llm.enabled:
+        adapter, why = LLMFallbackAdapter(), "LLM fallback (no deterministic parser matched)"
+    if isinstance(adapter, LLMFallbackAdapter):
+        adapter.llm, adapter.institution, adapter.program = llm, src["institution"], src["program"]
+        adapter.fetcher = fetcher
+    return adapter, why
+
+
 def _course_details(adapter, fetcher: Fetcher, program_url: str, e: CurriculumEntry) -> CourseData:
+    try:
+        inline = adapter.inline_course(e)
+        if inline:
+            inline.title = inline.title or e.title
+            inline.credits_text = inline.credits_text or e.credits_text
+            return inline
+    except Exception as ex:
+        log.warning("inline course details failed for %s: %s", e.code, ex)
     url = adapter.course_detail_url(program_url, e)
     if not url:
         return CourseData(code=e.code, title=e.title, credits_text=e.credits_text)
@@ -132,6 +177,10 @@ def _fill_metadata(llm: LLM, src, p: ProgramData) -> None:
 def _store(conn, src, program: ProgramData, adapter, ai_courses: List[CourseData], verdicts: Dict[str, dict],
            parsed: Dict[str, dict], titles: Dict[str, Optional[str]], entries: Dict[str, CurriculumEntry]) -> None:
     inst_id = db.get_or_create_institution(conn, src["institution"], urlparse(src["catalog_url"]).netloc)
+    for f in ("college", "department"):  # breadcrumb separators like "College of X ·"
+        v = getattr(program, f)
+        if v:
+            setattr(program, f, v.strip(" ·|>/-–—") or None)
     conn.execute(
         "INSERT INTO programs(source_id, institution_id, name, degree, degree_full, college, department, "
         "catalog_year, total_credits, description, source_url, adapter, adapter_version, extracted_at) "
