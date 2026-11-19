@@ -25,6 +25,10 @@ class BlockedError(Exception):
     pass
 
 
+class NotFoundError(Exception):
+    """The page does not exist (404/410). Not a bot check, so the browser is not tried."""
+
+
 class Fetcher:
     def __init__(self, conn, refresh: bool = False, use_browser: bool = True,
                  browser: Optional[BrowserSession] = None):
@@ -59,6 +63,9 @@ class Fetcher:
         if status < 400 and not looks_blocked(body):
             self._store(url, status, body, "http+cookies" if urlparse(url).netloc in self._browser_hosts else "http")
             return body
+        if status in (404, 410):
+            self._store(url, status, body, "http")
+            raise NotFoundError(f"HTTP {status}: {url}")
         if not self.use_browser:
             self._store(url, status, body, "http")
             raise BlockedError(f"HTTP {status} ({len(body)} bytes), bot check; browser fetch disabled: {url}")
