@@ -67,7 +67,7 @@ def parse_text(text: str) -> dict:
         if len(line) < 150 and OUTCOME_HEAD_RE.search(line):
             doc["outcomes"] += _bullets_after(lines, i)
     doc["outcomes"] = list(dict.fromkeys(doc["outcomes"]))[:25]
-    doc["assessments"] = _weights(lines)
+    doc["assessments"] = weights(lines)
     for line in lines:
         m = WEEK_RE.match(line)
         if m:
@@ -98,15 +98,16 @@ def _bullets_after(lines: List[str], start: int) -> List[str]:
     return [x for x in items if 10 <= len(x) <= 400]
 
 
-def _weights(lines: List[str]) -> List[dict]:
+def weights(lines: List[str]) -> List[dict]:
     """'Homework 40%' / 'Midterm: 25%' pairs, kept only if they add up to about 100 (so a letter-grade
-    scale like 'A 90%' is never mistaken for weights)."""
-    found = []
+    scale like 'A 90%' is never mistaken for weights). A name repeated (same table shown twice) counts once."""
+    found, seen = [], set()
     for line in lines:
         for name, w in WEIGHT_RE.findall(line):
             name = name.strip(" -")
-            if re.fullmatch(r"[A-F][+-]?|total|grade|above|below", name, re.I):
+            if re.fullmatch(r"[A-F][+-]?|total|grade|above|below", name, re.I) or name.lower() in seen:
                 continue
+            seen.add(name.lower())
             found.append({"name": name, "kind": assessment_kind(name), "weight_pct": float(w)})
     total = sum(a["weight_pct"] for a in found)
     return found if found and 90 <= total <= 110 else []

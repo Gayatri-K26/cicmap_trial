@@ -33,8 +33,7 @@ def test_match_confidence():
 def test_parse_purdue_page():
     d = ss.parse_page((FIX / "simplesyllabus_purdue_cs37300.html").read_text())
     assert len(d["outcomes"]) == 6 and d["outcomes"][0].startswith("Identify key elements")
-    assert [a["name"] for a in d["assessments"]] == ["Exams", "Homework Assignments", "Participation Activities"]
-    assert d["assessments"][0]["kind"] == "exam"
+    assert d["assessments"] == []  # no 'Name NN%' weights on this page: left to the LLM pass
     assert d["materials"] == []  # 'No textbooks required'
     assert d["summary"].startswith("This course will introduce")  # 'Credit Hours: 3.00.' stripped
     assert "Lowest passing grade" in d["grading_scale"]
@@ -67,3 +66,13 @@ def test_parse_mga_page():
     assert d["instructor"] == "Jongho Seol" and d["delivery_mode"] == "Fully at a distance"
     assert d["grading_scale"].startswith("Letter Grade Percentage; A 90% - 100%")
     assert "Course-Level AI Policy" in d["raw_text"]  # unrecognized sections kept for a later pass
+
+
+def test_weights_shown_twice_count_once_and_must_add_up():
+    table = "<table><tr><td>Midterm Project</td><td>40%</td></tr><tr><td>Final Project</td><td>60%</td></tr></table>"
+    html = (f'<div class="component"><h2>Evaluation & Grading</h2>{table}</div>'
+            f'<div class="component"><h2>Assignments</h2>{table}</div>')
+    assert [(a["name"], a["weight_pct"]) for a in ss.parse_page(html)["assessments"]] == [
+        ("Midterm Project", 40.0), ("Final Project", 60.0)]
+    partial = '<div class="component"><h2>Grading</h2><p>Final exam 40%</p><p>Homework 20%</p></div>'
+    assert ss.parse_page(partial)["assessments"] == []  # 60% total: not the full breakdown

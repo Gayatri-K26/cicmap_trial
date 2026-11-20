@@ -66,25 +66,12 @@ def match_confidence(item: dict, course_title: Optional[str]) -> float:
 
 # --- parsing ------------------------------------------------------------------------------------------
 
-_PCT_LINE = re.compile(r"^(?P<name>[A-Za-z][^%\d]{1,60}?)[\s:–\-]*\(?(?P<w>\d{1,3}(?:\.\d+)?)\s*%\)?$")
 _NO_TEXTBOOK = re.compile(r"^(no\b.*\brequired|see\b)", re.I)  # 'No textbooks required', 'See the details...'
 
 
 def _lines(comp) -> List[str]:
     lines = [clean(x) for x in comp.get_text("\n", strip=True).split("\n")]
     return [x for x in lines[1:] if x]  # first line is the section title
-
-
-def _assessments(lines: List[str]) -> List[dict]:
-    """'Midterm: 25%' lines, or a short name line followed by its description (weight left to the LLM)."""
-    out = []
-    for i, line in enumerate(lines):
-        m = _PCT_LINE.match(line)
-        if m:
-            out.append({"name": m.group("name").strip(), "kind": syllabi.assessment_kind(line), "weight_pct": float(m.group("w"))})
-        elif len(line) <= 60 and not line.endswith((".", ":")) and i + 1 < len(lines) and len(lines[i + 1]) > 60:
-            out.append({"name": line, "kind": syllabi.assessment_kind(line), "weight_pct": None, "details": lines[i + 1][:1000]})
-    return out
 
 
 def _materials(comp) -> List[dict]:
@@ -107,7 +94,7 @@ def parse_page(html: str) -> dict:
     """A rendered Simple Syllabus page -> the section dict syllabi.save_document takes."""
     soup = BeautifulSoup(html, "lxml")
     doc: dict = {"outcomes": [], "topics": [], "assessments": [], "materials": []}
-    raw = []
+    raw, weight_lines = [], []
     for comp in soup.select("div.component"):
         h2 = comp.find("h2")
         if not h2:
@@ -133,15 +120,18 @@ def parse_page(html: str) -> dict:
             rows = [" ".join(filter(None, (clean(td.get_text(" ")) for td in tr.find_all(["td", "th"]))))
                     for tr in comp.find_all("tr")]
             doc["grading_scale"] = "; ".join(r for r in (rows or lines) if r)[:1000] or None
-            doc["assessments"] += [a for a in _assessments(lines) if a["weight_pct"] is not None]
+            weight_lines += rows + lines
         elif re.search(r"assignment|assessment|evaluation", title):
-            doc["assessments"] += _assessments(lines)
+            weight_lines += lines
         elif "description" in title:
             doc["summary"] = re.sub(r"^Credit Hours:\s*[\d.]+\.?\s*", "", " ".join(lines))[:3000] or None
         elif "general course information" in title:
             for i, line in enumerate(lines[:-1]):
                 if line.rstrip(":").lower() == "modality":
                     doc["delivery_mode"] = lines[i + 1]
+    # Only explicit 'Name NN%' weights that add up to ~100; unweighted assessments are left to the LLM pass,
+    # which reads names and point-based weights more reliably than a line heuristic.
+    doc["assessments"] = syllabi.weights(weight_lines)
     doc["raw_text"] = "\n\n".join(raw)
     return doc
 

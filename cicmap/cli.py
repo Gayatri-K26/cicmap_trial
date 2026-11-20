@@ -222,6 +222,24 @@ def syllabus_web_cmd(school: Optional[str] = typer.Option(None, help="Only this 
                "candidate pages read).")
 
 
+@syllabus_app.command("llm")
+def syllabus_llm_cmd(school: Optional[str] = typer.Option(None, help="Only this school, e.g. 'purdue'."),
+                     verbose: bool = typer.Option(False, "-v", "--verbose")):
+    """Fill syllabus sections the rules missed (weights, textbooks, topics) with DeepSeek. Run after
+    `syllabus portal` / `syllabus web`; answers are cached."""
+    from .llm import LLM
+    from . import syllabus_llm
+
+    conn = _conn()
+    llm = LLM(conn)
+    if not llm.enabled:
+        typer.echo("DEEPSEEK_API_KEY is not set.")
+        raise typer.Exit(1)
+    c = syllabus_llm.fill_all(conn, llm, school, progress=lambda m: typer.echo(f"    {m}") if verbose else None)
+    typer.echo(f"{c['changed']} of {c['documents']} syllabus documents gained sections "
+               f"(LLM calls {llm.calls}, cached {llm.cache_hits}).")
+
+
 @syllabus_app.command("show")
 def syllabus_show_cmd(school: str, code: str):
     """Show a course's combined syllabus: each section with the document it came from."""
