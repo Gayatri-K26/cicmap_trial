@@ -33,8 +33,11 @@ def school_domain(catalog_host: str) -> str:
     return ".".join(parts[-2:])
 
 
-def query_for(domain: str, code: str) -> str:
-    return f'site:{domain} "{code}" syllabus'
+def queries_for(domain: str, code: str) -> List[str]:
+    """One query per course. Broader ones ('course outline', the bare code) were tried on 2026-11-20: they
+    added only course-site subpages (assignments, slides) and list pages, and no syllabus for the schools
+    that had none, so they were dropped."""
+    return [f'site:{domain} "{code}" syllabus']
 
 
 def brave(conn, query: str, count: int = 10) -> List[dict]:
@@ -78,10 +81,13 @@ def candidates(conn, institution: Optional[str] = None) -> List[dict]:
     out: List[dict] = []
     for c in rows:
         domain = school_domain(c["domain"])
-        for r in brave(conn, query_for(domain, c["code"])):
-            if usable(r["url"], domain):
-                out.append({"course_id": c["id"], "institution": c["institution"], "code": c["code"],
-                            "course_title": c["title"], "domain": domain, **r})
+        seen = set()
+        for q in queries_for(domain, c["code"]):
+            for r in brave(conn, q):
+                if usable(r["url"], domain) and r["url"] not in seen:
+                    seen.add(r["url"])
+                    out.append({"course_id": c["id"], "institution": c["institution"], "code": c["code"],
+                                "course_title": c["title"], "domain": domain, **r})
     return out
 
 
@@ -89,13 +95,20 @@ def candidates(conn, institution: Optional[str] = None) -> List[dict]:
 
 # URL words of pages that are never one course's syllabus; skipped before downloading.
 NOT_SYLLABUS_URL = re.compile(r"catalog|bulletin|transfer|directory|/jobs|schedule|flowchart|rhodemap|"
-                              r"audit|study-?plan|program-review|self-study", re.I)
+                              r"audit|study-?plan|program-review|self-study|"
+                              # pages of a course site other than its syllabus or home page
+                              r"assignment|project|homework|/hw\d|lecture|slides|week\d|-w\d+-", re.I)
 SIGNALS = [r"grading|grade (distribution|breakdown)", r"textbook|required (text|materials)|course materials",
            r"office hours", r"learning outcomes|course objectives|student learning|you will be able to",
            r"schedule|week \d|calendar", r"prerequisite", r"attendance", r"exam|midterm", r"homework|assignment",
            r"instructor|professor"]
 MIN_SIGNALS = 3
-MAX_CODES = 20  # degree maps and catalogs list dozens of courses; a syllabus names a few
+
+
+def skip_url(url: str) -> bool:
+    """Never a syllabus by its URL, unless the URL says 'syllabus' ('capstone-project-syllabus.pdf')."""
+    return bool(NOT_SYLLABUS_URL.search(url)) and not re.search(r"syllab", url, re.I)
+MAX_CODES = 15  # list pages name 17+ courses; the syllabi found so far name at most 12
 
 
 def code_in(code: str, text: str) -> bool:
@@ -127,9 +140,11 @@ def discover(conn, institution: Optional[str] = None, progress=lambda m: None) -
     """Search, fetch, keep real syllabi, parse them deterministically and store them."""
     from . import documents, syllabi
 
-    counts = {"candidates": 0, "fetched": 0, "kept": 0, "courses": set()}
-    for f in candidates(conn, institution):
-        if NOT_SYLLABUS_URL.search(f["url"]):
+    counts = {"candidates": 0, "fetched": 0, "kept": 0, "courses": set(), "removed": 0}
+    found = candidates(conn, institution)
+    kept_urls = set()
+    for f in found:
+        if skip_url(f["url"]):
             continue
         counts["candidates"] += 1
         try:
@@ -146,10 +161,26 @@ def discover(conn, institution: Optional[str] = None, progress=lambda m: None) -
                               source_type=kind)
         conn.commit()
         counts["kept"] += 1
+        kept_urls.add(f["url"])
         counts["courses"].add(f["course_id"])
         progress(f"{f['institution']} {f['code']}: {f['url']}")
+    # Web documents stored earlier for these courses that no longer pass (rules tightened) are removed.
+    course_ids = {f["course_id"] for f in found}
+    stale = [r["id"] for r in conn.execute(
+        "SELECT DISTINCT s.id, s.source_url FROM syllabi s JOIN syllabus_courses sc ON sc.syllabus_id = s.id "
+        "WHERE s.source_kind IN ('faculty', 'department')").fetchall()
+        if r["source_url"] not in kept_urls and _linked_to(conn, r["id"], course_ids)]
+    for sid in stale:
+        conn.execute("DELETE FROM syllabi WHERE id = ?", (sid,))
+    conn.commit()
+    counts["removed"] = len(stale)
     counts["courses"] = len(counts["courses"])
     return counts
+
+
+def _linked_to(conn, syllabus_id: int, course_ids: set) -> bool:
+    return any(r[0] in course_ids for r in conn.execute(
+        "SELECT course_id FROM syllabus_courses WHERE syllabus_id = ?", (syllabus_id,)))
 
 
 def summary(found: List[dict]) -> Dict[str, Dict[str, int]]:

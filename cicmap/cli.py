@@ -219,7 +219,7 @@ def syllabus_web_cmd(school: Optional[str] = typer.Option(None, help="Only this 
 
     c = websearch.discover(_conn(), school, progress=lambda m: typer.echo(f"    {m}") if verbose else None)
     typer.echo(f"{c['kept']} syllabi kept for {c['courses']} courses ({c['fetched']} of {c['candidates']} "
-               "candidate pages read).")
+               f"candidate pages read; {c['removed']} earlier documents no longer pass and were removed).")
 
 
 @syllabus_app.command("llm")

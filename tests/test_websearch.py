@@ -25,8 +25,9 @@ def test_candidates_use_cached_results():
     c.execute("INSERT INTO courses(id, institution_id, code, title, is_ai) VALUES (1, 1, 'CS 380', 'AI', 1)")
     results = [{"url": "https://www.cs.drexel.edu/~dds26/CS380_Syllabus.pdf", "title": "CS 380 Syllabus"},
                {"url": "https://catalog.drexel.edu/cs380", "title": "Catalog"}]
-    c.execute("INSERT INTO raw_pages(url, status_code, body, fetch_method) VALUES (?, 200, ?, 'search')",
-              ('brave:site:drexel.edu "CS 380" syllabus', json.dumps(results)))
+    for i, q in enumerate(websearch.queries_for("drexel.edu", "CS 380")):  # all cached: no network in tests
+        c.execute("INSERT INTO raw_pages(url, status_code, body, fetch_method) VALUES (?, 200, ?, 'search')",
+                  (f"brave:{q}", json.dumps(results if i < 2 else [])))  # same page from two queries
     found = websearch.candidates(c)
     assert [f["url"] for f in found] == [results[0]["url"]]
     assert websearch.summary(found) == {"Drexel University": {"courses": 1, "candidates": 1}}
@@ -58,3 +59,26 @@ def test_code_in_url_forms():
     assert websearch.code_in("CS 380", "https://x.edu/CS380_Syllabus.pdf")
     assert websearch.code_in("CS 380", "cs-380 notes")
     assert not websearch.code_in("CS 380", "CS 3801")
+
+
+def test_skip_url():
+    assert websearch.skip_url("https://x.edu/~so367/2017/CS380/assignments.html")
+    assert websearch.skip_url("https://x.edu/~so367/2017/CS380/CS380-W1-Introduction.pdf")
+    assert not websearch.skip_url("https://x.edu/~ab/capstone-project-syllabus.pdf")  # says syllabus
+    assert not websearch.skip_url("https://x.edu/~so367/2017/CS380/intro.html")
+
+
+def test_discover_removes_documents_that_no_longer_pass():
+    from cicmap import syllabi
+    c = db.connect(Path(":memory:"))
+    c.execute("INSERT INTO institutions(id, name, domain) VALUES (1, 'Drexel University', 'catalog.drexel.edu')")
+    c.execute("INSERT INTO courses(id, institution_id, code, title, is_ai) VALUES (1, 1, 'CS 380', 'AI', 1)")
+    old = "https://www.cs.drexel.edu/~so367/CS380/assignment3.html"
+    syllabi.save_document(c, [1], old, "faculty", {}, 0.75, "code_in_text")
+    syllabi.save_document(c, [1], "https://catalog.drexel.edu/cs380", "catalog", {}, 1.0, "catalog")
+    for q in websearch.queries_for("drexel.edu", "CS 380"):
+        c.execute("INSERT INTO raw_pages(url, status_code, body, fetch_method) VALUES (?, 200, ?, 'search')",
+                  (f"brave:{q}", json.dumps([{"url": old, "title": "Assignment 3"}])))
+    counts = websearch.discover(c)
+    assert counts["removed"] == 1 and counts["kept"] == 0
+    assert [r[0] for r in c.execute("SELECT source_kind FROM syllabi")] == ["catalog"]  # catalog untouched
