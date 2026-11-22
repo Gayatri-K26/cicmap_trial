@@ -143,3 +143,12 @@ def test_parse_text_takes_what_it_can_read():
 
 def test_weights_that_dont_add_up_are_dropped():
     assert syllabi.parse_text("Homework 40%\nAttendance matters: 5% of students fail")["assessments"] == []
+
+
+def test_common_materials_leave_out_software(conn):
+    _two_schools(conn)
+    for url, cid in (("p1.pdf", 1), ("p2.pdf", 3)):
+        syllabi.save_document(conn, [cid], url, "faculty", {"materials": [{"title": "Python", "kind": "software"}]},
+                              0.9, "x")
+    assert [m["title"] for m in queries.common_materials(conn)] == [
+        "Artificial Intelligence: A Modern Approach (4th ed.)"]

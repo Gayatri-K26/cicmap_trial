@@ -201,12 +201,13 @@ def _title_key(title: str) -> str:
 
 
 def common_materials(conn, min_schools: int = 2) -> List[dict]:
-    """Textbooks and other materials used at `min_schools` or more schools, most widely used first."""
+    """Textbooks and readings used at `min_schools` or more schools, most widely used first. Software
+    ('Python', 'PyTorch') is left out: it would top every list without saying anything about content."""
     groups: Dict[str, dict] = {}
     for r in conn.execute(
             "SELECT m.title, m.authors, i.name AS institution, c.code FROM syllabus_materials m "
             "JOIN syllabus_courses sc ON sc.syllabus_id = m.syllabus_id JOIN courses c ON c.id = sc.course_id "
-            "JOIN institutions i ON i.id = c.institution_id"):
+            "JOIN institutions i ON i.id = c.institution_id WHERE COALESCE(m.kind, '') != 'software'"):
         g = groups.setdefault(_title_key(r["title"]), {"title": r["title"], "authors": r["authors"],
                                                        "schools": {}})
         g["schools"].setdefault(r["institution"], set()).add(r["code"])
