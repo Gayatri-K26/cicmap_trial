@@ -94,3 +94,13 @@ def test_mutual_corequisites_are_not_a_loop(conn):
     conn.executemany("INSERT INTO course_prereqs(course_id, kind, group_no, prereq_course_id) "
                      "VALUES (?, 'coreq', 1, ?)", [(1, 4), (4, 1)])  # lecture and lab list each other
     assert queries.prereq_cycles(conn) == []
+
+
+def test_course_shows_syllabus_prereqs_only_when_catalog_has_none(conn):
+    from cicmap import syllabi
+    syllabi.save_document(conn, [4], "https://p.edu/doc", "portal", {"term": "Fall", "year": 2026,
+                          "extra": {"prerequisites": "CS 480, Minimum Grade of C"}}, 0.95, "portal_code")
+    sp = queries.course(conn, 4)["syllabus_prereq"]
+    assert (sp["text"], sp["source_kind"], sp["year"]) == ("CS 480, Minimum Grade of C", "portal", 2026)
+    conn.execute("UPDATE courses SET prereq_text = 'CS 480' WHERE id = 4")
+    assert queries.course(conn, 4)["syllabus_prereq"] is None  # the catalog's own text wins

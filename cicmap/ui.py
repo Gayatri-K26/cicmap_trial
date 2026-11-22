@@ -219,7 +219,14 @@ def course_panel(course_id: int):
                         unsafe_allow_html=True)
 
     with prereqs:
-        requirement_lines("Requires", c["prereqs"], c["prereq_text"])
+        sp = c["syllabus_prereq"]
+        if sp and not c["prereqs"]:
+            when = " ".join(str(x) for x in (sp["term"], sp["year"]) if x)
+            st.markdown(f"**Requires:** {sp['text']}")
+            st.caption(f"From the [{sp['source_kind']}{' ' + when if when else ''} syllabus]({sp['source_url']}); "
+                       "the catalog lists no prerequisites. Shown as written, not parsed into course links.")
+        else:
+            requirement_lines("Requires", c["prereqs"], c["prereq_text"])
         if c["coreqs"] or c["coreq_text"]:
             requirement_lines("Take at the same time", c["coreqs"], c["coreq_text"])
         st.markdown("**Needed for:** " + (", ".join(c["required_by"]) or "no other extracted course"))

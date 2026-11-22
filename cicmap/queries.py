@@ -114,6 +114,15 @@ def course(conn, course_id: int) -> Optional[dict]:
     c["extra"] = {k: v for k, v in extra.items() if not is_syllabus_label(k)}
     c["prereqs"] = prereq_groups(conn, course_id, "prereq")
     c["coreqs"] = prereq_groups(conn, course_id, "coreq")
+    # Prerequisite wording from a syllabus, for courses whose catalog page lists none (Purdue).
+    c["syllabus_prereq"] = None
+    if not c.get("prereq_text"):
+        for d in syllabi(conn, course_id):
+            text = (json.loads(d["extra_json"]) if d.get("extra_json") else {}).get("prerequisites")
+            if text:
+                c["syllabus_prereq"] = {"text": text, "source_url": d["source_url"], "source_kind": d["source_kind"],
+                                        "term": d["term"], "year": d["year"]}
+                break
     c["required_by"] = [x["code"] for x in conn.execute(
         "SELECT DISTINCT c2.code FROM course_prereqs p JOIN courses c2 ON c2.id = p.course_id "
         "WHERE p.prereq_course_id = ? ORDER BY c2.code", (course_id,))]

@@ -36,6 +36,8 @@ def test_parse_purdue_page():
     assert d["assessments"] == []  # no 'Name NN%' weights on this page: left to the LLM pass
     assert d["materials"] == []  # 'No textbooks required'
     assert d["summary"].startswith("This course will introduce")  # 'Credit Hours: 3.00.' stripped
+    assert "Prerequisite" not in d["summary"] and d["summary"].endswith("evaluation.")
+    assert d["extra"]["prerequisites"].startswith("Undergraduate level, CS 18200, Minimum Grade of C")
     assert "Lowest passing grade" in d["grading_scale"]
 
 
@@ -50,6 +52,19 @@ def test_materials_edition_once_and_placeholders_skipped():
     assert [m["title"] for m in ss.parse_page(html)["materials"]] == [
         "AI: A Modern Approach (4th Edition)", "Speech and Language Processing (3rd Edition)",
         "Mining of Massive Datasets (3 ed.)"]
+
+
+def test_description_label_lines_split_off():
+    html = ('<div class="component"><h2>Course Description</h2><p>Covers intelligent machines. Credits 3 Lecture '
+            'Hours 3 Lab Hours 0 Prerequisite At least a C in CSCI 1302</p></div>')
+    d = ss.parse_page(html)
+    assert d["summary"] == "Covers intelligent machines."
+    assert d["extra"]["prerequisites"] == "At least a C in CSCI 1302"
+    sentence = html.replace(" Credits 3 Lecture Hours 3 Lab Hours 0", "")  # 'machines. Prerequisite At least...'
+    assert ss.parse_page(sentence)["summary"] == "Covers intelligent machines."
+    plain = ('<div class="component"><h2>Course Description</h2><p>Assumes no prerequisite knowledge of AI.</p>'
+             '</div>')
+    assert ss.parse_page(plain)["summary"] == "Assumes no prerequisite knowledge of AI."  # ordinary sentence kept
 
 
 def test_grading_table_with_empty_cell():

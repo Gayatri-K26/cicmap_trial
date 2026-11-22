@@ -126,6 +126,9 @@ def course_cmd(school: str, code: str):
                f"[{c['ai_method']}] {c['ai_reason'] or ''}")
     typer.echo(f"\n{c['description'] or '(no description)'}\n")
     typer.echo(f"Prerequisite text: {c['prereq_text'] or '-'}")
+    if c["syllabus_prereq"] and not c["prereqs"]:
+        typer.echo(f"Prerequisites from syllabus ({c['syllabus_prereq']['source_url']}): "
+                   f"{c['syllabus_prereq']['text']}")
     if c["prereqs"]:
         typer.echo("Parsed prereqs: " + queries.format_groups(c["prereqs"]))
     if c["coreqs"]:

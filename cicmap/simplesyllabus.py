@@ -66,6 +66,7 @@ def match_confidence(item: dict, course_title: Optional[str]) -> float:
 
 # --- parsing ------------------------------------------------------------------------------------------
 
+FACTS_TAIL_RE = re.compile(r"\s(?:Credits?|Credit Hours)\s*:?\s*\d+(?:\.\d+)?\b")  # 'Credits 3 Lecture Hours'
 _NO_TEXTBOOK = re.compile(r"^(no\b.*\brequired|see\b)", re.I)  # 'No textbooks required', 'See the details...'
 
 
@@ -124,7 +125,21 @@ def parse_page(html: str) -> dict:
         elif re.search(r"assignment|assessment|evaluation", title):
             weight_lines += lines
         elif "description" in title:
-            doc["summary"] = re.sub(r"^Credit Hours:\s*[\d.]+\.?\s*", "", " ".join(lines))[:3000] or None
+            # Facts appended to the description belong elsewhere: '... Credits 3 Lecture Hours 3 Lab Hours 0
+            # Prerequisite At least a C in CSCI 1302' (Middle Georgia State), '... Prerequisites: ...' (Purdue).
+            desc, prereq = re.sub(r"^Credit Hours:\s*[\d.]+\.?\s*", "", " ".join(lines)), None
+            m = FACTS_TAIL_RE.search(desc)
+            if m:
+                tail, desc = desc[m.start():], desc[:m.start()]
+                p = re.search(r"\bPre-?requisites?\s*:?\s*(.+?)(?:\s+Co-?requisites?\b.*)?$", tail, re.I)
+                prereq = p.group(1) if p else None
+            # 'Prerequisites: ...' anywhere, or 'Prerequisite At least ...' starting a new sentence
+            m = re.search(r"\bPre-?requisites?\s*:\s*|(?<=\.)\s+Pre-?requisites?\s+(?=[A-Z])", desc, re.I)
+            if m:
+                prereq, desc = desc[m.end():], desc[:m.start()]
+            if prereq and prereq.strip():
+                doc.setdefault("extra", {})["prerequisites"] = prereq.strip()[:2000]
+            doc["summary"] = desc.strip()[:3000] or None
         elif "general course information" in title:
             for i, line in enumerate(lines[:-1]):
                 if line.rstrip(":").lower() == "modality":
@@ -166,8 +181,8 @@ def discover(conn, fetcher: Fetcher, institution: Optional[str] = None, progress
                     continue
                 year = term_key(it.get("term_name"))[0]
                 m = re.search(r"(winter|spring|summer|fall)", it.get("term_name") or "", re.I)
-                doc.update(term=m.group(1).title() if m else None, year=year or None,
-                           extra={"section": it.get("title")})
+                doc.update(term=m.group(1).title() if m else None, year=year or None)
+                doc.setdefault("extra", {})["section"] = it.get("title")
                 syllabi.save_document(conn, [c["id"]], url, "portal", doc, match_confidence(it, c["title"]),
                                       "portal_code", source_type="html")
                 saved += 1
