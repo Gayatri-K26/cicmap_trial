@@ -59,7 +59,9 @@ def test_syllabi_with_children(conn):
     s = queries.syllabi(conn, 1)[0]
     assert s["outcomes"] == ["Build agents"]
     assert s["assessments"][0]["weight_pct"] == 40 and s["match_confidence"] == 0.9
-    assert queries.totals(conn)["syllabi"] == 1
+    assert queries.totals(conn)["syllabi"] == 1 and queries.totals(conn)["courses_with_syllabus"] == 1
+    conn.execute("INSERT INTO syllabi(source_url, source_kind) VALUES ('cat', 'catalog')")
+    assert queries.totals(conn)["syllabi"] == 1  # catalog entries are not syllabi
 
 
 def test_cross_listed_syllabus_belongs_to_both_courses(conn):

@@ -223,5 +223,8 @@ def totals(conn) -> dict:
         "(SELECT COUNT(*) FROM program_sources WHERE active = 1 AND status = 'extracted') AS extracted, "
         "(SELECT COUNT(*) FROM courses WHERE is_ai = 1) AS ai_courses, "
         "(SELECT COUNT(*) FROM course_prereqs WHERE prereq_course_id IS NOT NULL) AS prereq_links, "
-        "(SELECT COUNT(*) FROM syllabi) AS syllabi").fetchone()
+        # real syllabi only: every AI course also has its catalog entry stored as a document
+        "(SELECT COUNT(*) FROM syllabi WHERE source_kind != 'catalog') AS syllabi, "
+        "(SELECT COUNT(DISTINCT sc.course_id) FROM syllabus_courses sc JOIN syllabi s ON s.id = sc.syllabus_id "
+        " WHERE s.source_kind != 'catalog') AS courses_with_syllabus").fetchone()
     return dict(r)

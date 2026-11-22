@@ -117,7 +117,9 @@ with st.sidebar:
     c1.metric("Programs", f"{t['extracted']}/{t['programs']}")
     c2.metric("AI courses", t["ai_courses"])
     c1.metric("Prereq links", t["prereq_links"])
-    c2.metric("Syllabi", t["syllabi"])
+    c2.metric("With syllabus", t["courses_with_syllabus"],
+              help=f"AI courses with at least one real syllabus ({t['syllabi']} documents); catalog entries "
+                   "are not counted.")
     st.divider()
     if st.button("Sync from Google Sheet", width="stretch"):
         res = sheet.sync(conn, force=True)
