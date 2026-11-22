@@ -1,0 +1,20 @@
+# Makes `cicmap` a command. Install once into the venv: .venv/bin/pip install -e .
+# Dependencies stay in requirements.txt.
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cicmap"
+version = "0.1.0"
+description = "Extract AI courses, prerequisites and syllabi from university catalogs"
+requires-python = ">=3.9"
+
+[project.scripts]
+cicmap = "cicmap.cli:app"
+
+[tool.setuptools]
+packages = ["cicmap", "cicmap.adapters"]
+
+[tool.setuptools.package-data]
+cicmap = ["schema.sql"]

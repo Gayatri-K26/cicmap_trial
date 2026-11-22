@@ -1,7 +1,9 @@
 # cicmap command-line guide
 
 cicmap pulls AI courses, prerequisites and syllabi from university catalog pages into a SQLite database.
-Everything is run as `.venv/bin/python -m cicmap <command>`. Every command has `--help`.
+Every command is `cicmap <command>`, and every command has `--help`. The `cicmap` command needs the setup
+below and an activated virtual environment (`source .venv/bin/activate`, once per terminal). Without
+activating, use `.venv/bin/cicmap <command>`; `.venv/bin/python -m cicmap <command>` also works.
 
 Most commands only read the database and are instant. The commands that fetch pages or call an API
 (`sync`, `extract`, `syllabus portal|web|llm`) cache what they get, so running them again is fast and free
@@ -11,7 +13,9 @@ unless you pass `--refresh`.
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/pip install -e .                          # adds the `cicmap` command (uses your current code)
 .venv/bin/python -m playwright install chromium     # headless browser for bot-protected catalogs
+source .venv/bin/activate                           # each new terminal; the prompt shows (.venv)
 ```
 
 Keys go in `.env` in the project root (gitignored; never commit it):
@@ -35,12 +39,12 @@ sync  ->  extract  ->  syllabus portal  ->  syllabus web  ->  syllabus llm
 To build everything from scratch:
 
 ```bash
-.venv/bin/python -m cicmap sync
-.venv/bin/python -m cicmap extract --pending
-.venv/bin/python -m cicmap syllabus portal
-.venv/bin/python -m cicmap syllabus web
-.venv/bin/python -m cicmap syllabus llm
-.venv/bin/python -m cicmap check
+cicmap sync
+cicmap extract --pending
+cicmap syllabus portal
+cicmap syllabus web
+cicmap syllabus llm
+cicmap check
 ```
 
 Run `syllabus llm` after `portal` and `web`: those two re-parse their documents, which resets what the LLM
@@ -57,7 +61,7 @@ pass added. Re-running `syllabus llm` restores it from the cache with no API cal
 | `sources [--all]` | Lists programs with their id, status and AI-course count. `--all` includes programs removed from the sheet. |
 
 ```bash
-.venv/bin/python -m cicmap add "Wellesley College" "BA Computer Science" "https://catalog.wellesley.edu/..."
+cicmap add "Wellesley College" "BA Computer Science" "https://catalog.wellesley.edu/..."
 # Added source 17. Run: python -m cicmap extract 17     (the id depends on what's already tracked)
 ```
 
@@ -77,7 +81,7 @@ parses their prerequisites and stores the result.
 | `-v` | Show each step. |
 
 ```bash
-.venv/bin/python -m cicmap extract 4
+cicmap extract 4
 # [4] Drexel University
 #     EXTRACTED: 20 AI courses out of 82 in the curriculum  (pages fetched 0, via browser 0, LLM calls 0)
 ```
@@ -96,7 +100,7 @@ A program ends as `extracted`, `needs_parser` (no parser recognized the page), `
 | `parsers` | The catalog parsers available. |
 
 ```bash
-.venv/bin/python -m cicmap course drexel "CS 380"
+cicmap course drexel "CS 380"
 # Drexel University  CS 380  Artificial Intelligence  (3.0 credits)
 # ...
 # Parsed prereqs: CS 260 (min C)  AND  CS 270 (min C)
@@ -122,7 +126,7 @@ comes from the best document that has it.
 | `syllabus textbooks [--min-schools N]` | Textbooks and readings used at N or more schools (default 2). |
 
 ```bash
-.venv/bin/python -m cicmap syllabus show illinois "CS 422"
+cicmap syllabus show illinois "CS 422"
 # Illinois Institute of Technology  CS 422  Data Mining  (2 source documents)
 # Learning outcomes  [from faculty Spring 2013: http://www.cs.iit.edu/~agam/cs422/outline/index.html]
 # ...
@@ -130,7 +134,7 @@ comes from the best document that has it.
 #     participation: 5%
 #     ...
 
-.venv/bin/python -m cicmap syllabus search "reinforcement learning"
+cicmap syllabus search "reinforcement learning"
 # 'reinforcement learning': 13 schools
 # Brigham Young University
 #     CS 270  Introduction to Machine Learning  (in summary)
@@ -178,8 +182,9 @@ To see the exit code of the last command, run `echo $?`.
 
 | Problem | Fix |
 |---|---|
+| `command not found: cicmap` | Activate the venv (`source .venv/bin/activate`), or run `.venv/bin/cicmap`. If it still fails, run `.venv/bin/pip install -e .` once. |
 | `DEEPSEEK_API_KEY is not set` / `BRAVE_API_KEY is not set` | Add the key to `.env` in the project root. |
-| A program shows `blocked` | The site has a bot check. Run without `--no-browser` and make sure Chromium is installed (setup step 2). |
+| A program shows `blocked` | The site has a bot check. Run without `--no-browser` and make sure Chromium is installed (setup step 3). |
 | A program shows `needs_parser` | No parser recognized the page; with DeepSeek on, the LLM fallback parser is tried automatically. |
 | The UI shows an error like `no such column` after an update | Restart it (Ctrl+C, then `cicmap ui`). Streamlit keeps old code in memory until restarted. |
 | Data looks stale after a catalog changed | Re-run with `--refresh` to re-fetch pages instead of using the cache. |

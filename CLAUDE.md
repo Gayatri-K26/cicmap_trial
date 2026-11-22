@@ -8,7 +8,8 @@ Record new decisions in its "Decisions log" table.
 
 - DeepSeek API key: `DEEPSEEK_API_KEY` in `.env` (gitignored). Never commit it or write it into the doc.
 - Target programs come from Hasnain's public Google Sheet via `python -m cicmap sync` (no local copy).
-- Run everything with `.venv/bin/python -m cicmap ...`; tests with `.venv/bin/pytest`.
+- Run the CLI with `.venv/bin/cicmap ...` (installed by `.venv/bin/pip install -e .`; `.venv/bin/python -m cicmap ...`
+  also works); tests with `.venv/bin/pytest`.
 - Python is 3.9: use `Optional[...]`, not `X | None`, in pydantic models.
 - New catalog platforms go in `cicmap/adapters/` as `@register`ed `CatalogAdapter` subclasses, each with a
   saved sample page in `tests/fixtures/` and a test.

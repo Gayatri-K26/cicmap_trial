@@ -7,6 +7,7 @@ catalog pages into a SQLite database.
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+.venv/bin/pip install -e .            # adds the `cicmap` command (then: source .venv/bin/activate)
 .venv/bin/python -m playwright install chromium   # headless browser for bot-protected catalogs
 echo "DEEPSEEK_API_KEY=sk-..." > .env      # never commit this file
 ```
