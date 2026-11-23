@@ -20,6 +20,8 @@ WEAK = re.compile(
     r"data science|analytics|big data|vision|language|agent|recommend|optimization|statistical learning|"
     r"bayesian|probabilistic|inference|search|algorithm|intelligen|smart|automation|ethic", re.I)
 
+TITLE_ONLY_MAX = 0.6  # highest confidence for a course whose catalog entry has no description
+
 CATEGORIES = ["foundations", "machine_learning", "deep_learning", "nlp", "computer_vision", "robotics",
               "reinforcement_learning", "generative_ai", "data_science_ml", "ai_ethics_policy",
               "ai_applications", "ai_capstone_project", "other_ai"]
@@ -71,7 +73,7 @@ def classify_details(llm: LLM, program_name: str, courses: List[CourseData]) -> 
         out[c.code] = {"is_ai": label == "yes", "category": None, "confidence": 0.9 if label == "yes" else 0.4,
                        "reason": f"keyword screen: {label}", "method": "keyword"}
     if not llm.enabled or not courses:
-        return out
+        return _flag_title_only(courses, out)
     payload = [{"code": c.code, "title": c.title, "description": (c.description or "")[:900]} for c in courses]
     system = ("You classify university courses. " + DEFINITION + " Answer with JSON only.")
     user = (f"Program: {program_name}\nCourses:\n{json.dumps(payload, ensure_ascii=False)}\n\n"
@@ -90,6 +92,16 @@ def classify_details(llm: LLM, program_name: str, courses: List[CourseData]) -> 
                              "reason": (item.get("reason") or "")[:300], "method": "llm"}
     except LLMError:
         pass
+    return _flag_title_only(courses, out)
+
+
+def _flag_title_only(courses: List[CourseData], out: Dict[str, dict]) -> Dict[str, dict]:
+    """No description: the verdict rests on the title alone, so say so and trust it less."""
+    for c in courses:
+        if not (c.description or "").strip():
+            v = out[c.code]
+            v["confidence"] = min(v["confidence"] if v["confidence"] is not None else 1.0, TITLE_ONLY_MAX)
+            v["reason"] = "Judged on title only (no description found). " + v["reason"]
     return out
 
 
