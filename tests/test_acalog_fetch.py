@@ -120,3 +120,12 @@ def test_acalog_course_harding_plain_labels():
     c = course("COMP 2200", "acalog_harding_comp2200.html")
     assert c.prereq_text == "COMP 1500 or COMP 1700"
     assert c.extra["Term Offered"] == "Spring of even years"
+
+
+def test_acalog_description_starting_with_a_phrase_and_colon():
+    # "Concepts in Artificial intelligence: programming in ... Prerequisite(s): CSC 250" is the description,
+    # not a field named "Concepts in Artificial intelligence"
+    c = course("CSC 447", "acalog_dsu_csc447.html")
+    assert c.description.startswith("Concepts in Artificial intelligence: programming in languages")
+    assert c.prereq_text == "CSC 250"
+    assert c.extra == {}

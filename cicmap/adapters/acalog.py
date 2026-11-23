@@ -38,6 +38,15 @@ BARE_LABEL_RE = re.compile(r"^(pre-?requisites?(\(s\))?|co-?requisites?(\(s\))?|
                            r"term offered|typically offered|notes?|course attributes)$", re.I)
 HR = "\x00HR"
 LABEL_LINE = re.compile(r"^\s*([A-Z][A-Za-z0-9 /()&,'.-]{1,45}?)\s*:\s*(.*)$")
+SMALL_WORDS = {"a", "an", "and", "at", "by", "for", "in", "of", "on", "or", "the", "to", "with"}
+
+
+def looks_like_label(text: str) -> bool:
+    """'Term Offered', 'Class Restriction' yes; 'Concepts in Artificial intelligence' (a sentence) no."""
+    words = re.findall(r"[A-Za-z]+", text)
+    return len(words) <= 4 and all(w[0].isupper() or w.lower() in SMALL_WORDS for w in words)
+
+
 CREDITS_RE = re.compile(
     r"(\d+(?:\.\d+)?(?:\s*(?:-|–|to|or)\s*\d+(?:\.\d+)?)?)\s*(?:semester\s+)?(?:credit|cr\.?\b|units?\b)", re.I)
 
@@ -45,7 +54,7 @@ CREDITS_RE = re.compile(
 @register
 class AcalogAdapter(CatalogAdapter):
     name = "acalog"
-    version = 2
+    version = 3
 
     def detect(self, url: str, html: str) -> float:
         low = html.lower()
@@ -134,7 +143,7 @@ class AcalogAdapter(CatalogAdapter):
             m = LABEL_LINE.match(line)
             label = m.group(1).strip().lower() if m else None
             if m and (label in FIELD_LABELS or label in CREDIT_LABELS or label in MULTILINE_LABELS
-                      or len(label.split()) <= 4):
+                      or looks_like_label(m.group(1))):
                 value = m.group(2).strip()
                 multi = None
                 if label in CREDIT_LABELS:
