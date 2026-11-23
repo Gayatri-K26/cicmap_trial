@@ -91,8 +91,16 @@ def test_syllabus_links_picks_syllabus_links_on_the_school_site():
              ("Syllabus", "https://www.other.edu/syllabus.pdf"),               # another school
              ("Syllabus", "https://canvas.drexel.edu/courses/1/syllabus"),     # behind a login
              ("Home", "https://www.cs.drexel.edu/~ab/cs380/")]                 # the page itself
-    assert websearch.syllabus_links(links, "drexel.edu", "https://www.cs.drexel.edu/~ab/cs380/") == [
+    assert websearch.syllabus_links(links, "drexel.edu", "https://www.cs.drexel.edu/~ab/cs380/", "CS 380") == [
         "https://www.cs.drexel.edu/~ab/cs380/syllabus.pdf", "https://www.cs.drexel.edu/~ab/cs380/outline.html"]
+
+
+def test_syllabus_links_on_a_list_of_courses_only_this_course():
+    base = "https://www.cs.purdue.edu/courses/VT course syllabi/Fall 2024/"
+    links = [("Syllabus", base + f"cs-592{i:02d}.pdf") for i in range(6)] + [
+        ("Syllabus", base + "cs-37300-smith.pdf"), ("CS 47300 syllabus", "https://www.cs.purdue.edu/s/x.pdf")]
+    assert websearch.syllabus_links(links, "purdue.edu", "https://www.cs.purdue.edu/list.html", "CS 37300") == [
+        base + "cs-37300-smith.pdf"]
 
 
 def test_course_home_page_leads_to_its_syllabus():
