@@ -312,14 +312,7 @@ For each AI course:
 6. **Save it** with match certainty 0.9 if our course title also appears in the text, 0.75 if only the code
    does. The source kind is `faculty` if the address looks like a personal page (`/~name/`, `/homes/`,
    `/people/`), otherwise `department`.
-7. **Follow syllabus links one step.** A web page that is about the course (its code is near the top) but
-   isn't a syllabus itself is often the course's home page, with a "Syllabus" link. cicmap reads that page's
-   links once and follows up to 3 whose text or address says "syllabus" or "course outline", on the school's
-   own site, never deeper. A link that names this course's code goes first. On a page with more than 3 such
-   links (a list of every course's syllabus, like Purdue's semester course lists) only the links naming this
-   course are followed. The linked document goes through the same checks (step 4) and is saved with match
-   certainty 0.05 lower (0.85 / 0.7) and the page it was found on. This makes no new searches.
-8. **Remove documents that no longer pass.** If the rules were tightened since a document was saved, running
+7. **Remove documents that no longer pass.** If the rules were tightened since a document was saved, running
    the command again deletes it.
 
 #### Source 4: the DeepSeek pass (`cicmap syllabus llm`)
@@ -456,7 +449,7 @@ after its tests passed.
 | 11-21 | Prerequisites written inside Purdue's syllabus descriptions are shown on the Prerequisites tab | Purdue's catalog lists no prerequisites, so this fills a real gap for 7 of its 11 AI courses. |
 | 11-23 | Courses with no description are flagged "judged on title only", confidence at most 0.6 | A title alone can mislead; the flag shows which verdicts are less certain. |
 | 11-23 | Before changing a parser, re-parse every saved page of that platform and compare | Shows exactly which courses a fix changes (the Acalog label fix changed only the course it was meant to). |
-| 11-23 | Follow "syllabus" links one step from course pages found by search | Course home pages often link to the syllabus. On our 14 schools it found nothing new (see Gaps), but it costs no searches and helps other schools. |
+| 11-23 | Tried, then dropped, following "syllabus" links one step from course pages found by search | Of 72 course pages, 5 had such a link and none led to a new syllabus, so it added code without adding data. |
 | 11-23 | Don't follow links from program pages to other requirement pages | On our 14 programs those links lead only to general education, university core and other degrees, never AI elective lists. |
 | — | Never generate a syllabus with an LLM when none is found | It would be invented data presented as a real syllabus. Missing sections are shown as "not found" instead. |
 
@@ -476,10 +469,12 @@ after its tests passed.
 - **Uneven sections.** Of the 175 AI courses in the database, grading is known for 25, textbooks for 23,
   weekly topics for 18 and instructors for 20.
 
-- **Following syllabus links found nothing new here.** Of 72 course pages that search found, 5 had a
-  "syllabus" link: one led to a syllabus search had already found, the rest to old index pages, a deleted
-  Purdue page and a registration-system stub. Miami's site now redirects automated requests to a "sorry"
-  page, so its pages can't be re-read (its earlier syllabi stay saved).
+- **Syllabi reachable only by clicking through aren't found.** Following "syllabus" links one step from the
+  course pages search found was tried and dropped: of 72 such pages, 5 had a link, and none led to a new
+  syllabus (one was already found; the rest were old index pages, a deleted Purdue page and a
+  registration-system stub). It would be worth retrying for new schools.
+- **Miami now blocks automated requests.** Its site redirects them to a "sorry" page, so its pages can't be
+  re-read. Its earlier syllabi stay saved.
 
 ### Data quality
 
