@@ -9,7 +9,7 @@ import json
 import re
 import time
 from typing import Dict, List, Optional, Tuple
-from urllib.parse import unquote, urlparse
+from urllib.parse import urlparse
 
 import httpx
 
@@ -138,18 +138,13 @@ MAX_LINKS_PER_PAGE = 3
 LINKED_PENALTY = 0.05  # found one click away, not by search: a little less certain
 
 
-def syllabus_links(links: List[Tuple[str, str]], domain: str, page_url: str, code: str) -> List[str]:
-    """Links on a course page whose text or address says syllabus / course outline, on the school's site.
-    A link naming this course comes first. One that doesn't is kept only from a page with few such links (a
-    course's own page); a page with many is a list of courses, where only this course's link counts."""
-    found = []
+def syllabus_links(links: List[Tuple[str, str]], domain: str, page_url: str) -> List[str]:
+    """Links on a course page whose text or address says syllabus / course outline, on the school's site."""
+    out = []
     for text, url in links:
-        if url != page_url and url not in found and LINK_WORDS.search(f"{text} {url}") and usable(url, domain):
-            found.append(url)
-    texts = {url: text for text, url in links}
-    named = [u for u in found if code_in(code, f"{texts.get(u, '')} {unquote(u)}")]
-    others = [u for u in found if u not in named] if len(found) <= MAX_LINKS_PER_PAGE else []
-    return (named + others)[:MAX_LINKS_PER_PAGE]
+        if url != page_url and url not in out and LINK_WORDS.search(f"{text} {url}") and usable(url, domain):
+            out.append(url)
+    return out[:MAX_LINKS_PER_PAGE]
 
 
 def source_kind(url: str) -> str:
@@ -196,7 +191,7 @@ def discover(conn, institution: Optional[str] = None, progress=lambda m: None) -
 
     for f in seeds:  # one hop, never deeper
         try:
-            links = syllabus_links(documents.fetch_links(conn, f["url"]), f["domain"], f["url"], f["code"])
+            links = syllabus_links(documents.fetch_links(conn, f["url"]), f["domain"], f["url"])
         except Exception as e:
             progress(f"skip links of {f['url']}: {type(e).__name__}")
             continue
