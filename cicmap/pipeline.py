@@ -239,6 +239,15 @@ def _store(conn, src, program: ProgramData, adapter, ai_courses: List[CourseData
             conn.execute("INSERT INTO course_prereqs(course_id, kind, group_no, condition_text, parse_method) "
                          "VALUES (?, 'prereq', ?, ?, ?)", (course_id, base + i, cond, p.get("method")))
     syllabi.load_catalog(conn, [_course_id(conn, inst_id, c.code) for c in ai_courses])
+    unmark_dropped(conn, inst_id)
+
+
+def unmark_dropped(conn, inst_id: int) -> int:
+    """A course that no program lists as an AI course any more (dropped on re-extraction) stops counting as
+    one. The row stays: prerequisite links and syllabi may point to it."""
+    return conn.execute(
+        "UPDATE courses SET is_ai = 0 WHERE institution_id = ? AND is_ai = 1 AND NOT EXISTS "
+        "(SELECT 1 FROM program_courses pc WHERE pc.course_id = courses.id)", (inst_id,)).rowcount
 
 
 def _course_id(conn, inst_id: int, code: str) -> int:

@@ -104,3 +104,11 @@ def test_course_shows_syllabus_prereqs_only_when_catalog_has_none(conn):
     assert (sp["text"], sp["source_kind"], sp["year"]) == ("CS 480, Minimum Grade of C", "portal", 2026)
     conn.execute("UPDATE courses SET prereq_text = 'CS 480' WHERE id = 4")
     assert queries.course(conn, 4)["syllabus_prereq"] is None  # the catalog's own text wins
+
+
+def test_course_dropped_from_every_program_stops_counting_as_ai(conn):
+    from cicmap.pipeline import unmark_dropped
+    conn.execute("DELETE FROM program_courses WHERE course_id = 4")  # re-extraction no longer lists CS 580
+    assert unmark_dropped(conn, 1) == 1
+    assert conn.execute("SELECT is_ai FROM courses WHERE id = 4").fetchone()[0] == 0
+    assert conn.execute("SELECT is_ai FROM courses WHERE id = 1").fetchone()[0] == 1  # still listed
