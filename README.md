@@ -15,6 +15,7 @@ echo "DEEPSEEK_API_KEY=sk-..." > .env      # never commit this file
 ## Usage
 
 Full command reference, pipeline order and how to test: [docs/CLI.md](docs/CLI.md).
+How it works, the decisions made and the known gaps: [docs/PROCESS.md](docs/PROCESS.md).
 
 ### Web UI
 
