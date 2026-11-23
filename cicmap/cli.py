@@ -221,7 +221,8 @@ def syllabus_web_cmd(school: Optional[str] = typer.Option(None, help="Only this 
     from . import websearch
 
     c = websearch.discover(_conn(), school, progress=lambda m: typer.echo(f"    {m}") if verbose else None)
-    typer.echo(f"{c['kept']} syllabi kept for {c['courses']} courses ({c['fetched']} of {c['candidates']} "
+    typer.echo(f"{c['kept']} syllabi kept for {c['courses']} courses, {c['linked']} of them through a link on a "
+               f"course page ({c['fetched']} of {c['candidates']} "
                f"candidate pages read; {c['removed']} earlier documents no longer pass and were removed).")
 
 

@@ -40,3 +40,11 @@ def _pdf(text: str) -> bytes:
 
 def test_pdf_text():
     assert "CS 380 Syllabus" in documents.pdf_text(_pdf("CS 380 Syllabus"))
+
+
+def test_page_links_absolute_and_once():
+    from cicmap.documents import page_links
+    html = ('<a href="syllabus.pdf">Syllabus</a> <a href="/~ab/">Home</a> <a href="syllabus.pdf#p2">again</a>'
+            '<a href="mailto:x@y.edu">mail</a>')
+    assert page_links("https://cs.x.edu/~ab/cs1/", html) == [
+        ("Syllabus", "https://cs.x.edu/~ab/cs1/syllabus.pdf"), ("Home", "https://cs.x.edu/~ab/")]

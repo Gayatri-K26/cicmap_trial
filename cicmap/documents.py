@@ -7,8 +7,9 @@ import io
 import logging
 import time
 import warnings
-from typing import Dict, Tuple
-from urllib.parse import urlparse
+import json
+from typing import Dict, List, Tuple
+from urllib.parse import urldefrag, urljoin, urlparse
 
 import httpx
 from bs4 import BeautifulSoup, XMLParsedAsHTMLWarning
@@ -33,6 +34,57 @@ def fetch_text(conn, url: str) -> Tuple[str, str]:
                        (url,)).fetchone()
     if row:
         return row["body"], row["fetch_method"].split(":", 1)[1]
+    resp = _download(url)
+    ctype = resp.headers.get("content-type", "").lower()
+    path = urlparse(str(resp.url)).path.lower()
+    if "pdf" in ctype or path.endswith(".pdf") or resp.content[:5] == b"%PDF-":
+        text, kind = pdf_text(resp.content), "pdf"
+    elif "wordprocessingml" in ctype or path.endswith(".docx"):
+        text, kind = docx_text(resp.content), "docx"
+    else:
+        if looks_blocked(resp.text):
+            raise BlockedError(f"bot check or empty page: {url}")
+        text, kind = html_text(resp.text), "html"
+        _save_links(conn, url, page_links(str(resp.url), resp.text))
+    conn.execute("INSERT OR REPLACE INTO raw_pages(url, status_code, body, fetch_method, fetched_at) "
+                 "VALUES (?, ?, ?, ?, datetime('now'))", (url, resp.status_code, text, f"text:{kind}"))
+    conn.commit()
+    return text, kind
+
+
+def fetch_links(conn, url: str) -> List[Tuple[str, str]]:
+    """[(link text, absolute url)] of an HTML page, cached as 'links:<url>'. A PDF or Word file has none."""
+    row = conn.execute("SELECT body FROM raw_pages WHERE url = ?", (f"links:{url}",)).fetchone()
+    if row:
+        return [tuple(x) for x in json.loads(row["body"])]
+    resp = _download(url)
+    ctype = resp.headers.get("content-type", "").lower()
+    links = page_links(str(resp.url), resp.text) if "html" in ctype else []
+    _save_links(conn, url, links)
+    return links
+
+
+def page_links(base_url: str, html: str) -> List[Tuple[str, str]]:
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", XMLParsedAsHTMLWarning)
+        soup = BeautifulSoup(html, "lxml")
+    out, seen = [], set()
+    for a in soup.find_all("a", href=True):
+        href = urldefrag(urljoin(base_url, a["href"]))[0]
+        if href.startswith("http") and href not in seen:
+            seen.add(href)
+            out.append((" ".join(a.get_text(" ").split()), href))
+    return out
+
+
+def _save_links(conn, url: str, links: List[Tuple[str, str]]) -> None:
+    conn.execute("INSERT OR REPLACE INTO raw_pages(url, status_code, body, fetch_method, fetched_at) "
+                 "VALUES (?, 200, ?, 'links', datetime('now'))", (f"links:{url}", json.dumps(links)))
+    conn.commit()
+
+
+def _download(url: str) -> httpx.Response:
+    """GET with the robots.txt check, a pause between requests to one site, and a size limit."""
     if not robots_allowed(url):
         raise BlockedError(f"robots.txt disallows {url}")
     host = urlparse(url).netloc
@@ -45,20 +97,7 @@ def fetch_text(conn, url: str) -> Tuple[str, str]:
         raise DocumentError(f"HTTP {resp.status_code}: {url}")
     if len(resp.content) > MAX_BYTES:
         raise DocumentError(f"too large ({len(resp.content)} bytes): {url}")
-    ctype = resp.headers.get("content-type", "").lower()
-    path = urlparse(str(resp.url)).path.lower()
-    if "pdf" in ctype or path.endswith(".pdf") or resp.content[:5] == b"%PDF-":
-        text, kind = pdf_text(resp.content), "pdf"
-    elif "wordprocessingml" in ctype or path.endswith(".docx"):
-        text, kind = docx_text(resp.content), "docx"
-    else:
-        if looks_blocked(resp.text):
-            raise BlockedError(f"bot check or empty page: {url}")
-        text, kind = html_text(resp.text), "html"
-    conn.execute("INSERT OR REPLACE INTO raw_pages(url, status_code, body, fetch_method, fetched_at) "
-                 "VALUES (?, ?, ?, ?, datetime('now'))", (url, resp.status_code, text, f"text:{kind}"))
-    conn.commit()
-    return text, kind
+    return resp
 
 
 def html_text(html: str) -> str:
