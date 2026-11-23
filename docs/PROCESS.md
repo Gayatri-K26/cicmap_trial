@@ -22,7 +22,7 @@ You can use it from the command line (`cicmap ...`) or a web page (`cicmap ui`).
 |---|---|
 | Programs extracted | 14 of 14 |
 | AI courses found | 153 (out of the full curriculum of each program) |
-| Prerequisite links between courses | 242 (plus 24 non-course conditions like "junior standing") |
+| Prerequisite links between courses | 243 (plus 24 non-course conditions like "junior standing") |
 | AI courses with at least one real syllabus | 27 of 153, at 5 of 14 schools |
 
 Two more programs were added by hand to test adding a school (Illinois Tech's MS in AI, Northeastern's BS in
@@ -59,7 +59,7 @@ The sheet has one row per program. cicmap uses three of its columns: **Instituti
 What a sync does:
 
 1. If the last sync was less than 6 hours ago, it stops (unless you pass `--force`).
-2. It downloads the sheet as a CSV file. If the file is identical to last time (same fingerprint), it stops.
+2. It downloads the sheet as a CSV file. If the file is identical to last time (same fingerprint/hashcode), it stops.
 3. Otherwise it compares each row with the database, using the catalog URL as the row's identity:
    - **New URL:** the program is added with status `pending` (waiting to be extracted).
    - **Same URL, but the institution or program name changed:** the row is updated and set back to `pending`.
@@ -156,6 +156,12 @@ filter runs in two passes so DeepSeek only reads full descriptions for likely ca
 Courses DeepSeek marks as AI are stored as AI courses. With DeepSeek off (`--no-llm`), the keyword labels
 decide on their own, and the stored method says `keyword` instead of `llm`.
 
+**When a course has no description.** The decision then rests on the title alone. Such a course's reason starts
+with "Judged on title only (no description found)" and its confidence is capped at 0.6, so it stands out as
+less certain in the CLI and the UI. Today every AI course has a description; the two that didn't were parser
+bugs, now fixed (Northeastern's catalog uses a different element for descriptions, and a Dakota State
+description that began "Concepts in Artificial intelligence: ..." was read as a field label).
+
 ### 5. Prerequisites
 
 Each AI course's prerequisite text is turned into **groups**: all groups are required, and any one course in a
@@ -199,7 +205,10 @@ duplicated:
 - its list of AI courses is replaced;
 - each AI course is updated in place (a course is identified by school + code), and its prerequisite rows are
   replaced;
-- each AI course's catalog entry is saved again as its first syllabus document (step 7).
+- each AI course's catalog entry is saved again as its first syllabus document (step 7);
+- a course that no program lists as an AI course any more stops counting as one. Its row is kept, because
+  prerequisite links and syllabi may point to it. (Example: Northeastern's EECE 2160 "Embedded Design: Enabling
+  Robotics" was an AI course on its title alone; once its description was read, it wasn't.)
 
 Every run also writes a row to `extraction_runs` with its result, the parser used, how many pages were
 fetched and how many DeepSeek calls were made. The program's status becomes one of:
@@ -438,6 +447,8 @@ after its tests passed.
 | 11-20 | Tried, then dropped, broader searches for the 9 schools with no syllabus | About 320 extra searches found no syllabus there, only assignment pages and course lists. |
 | 11-21 | Open Syllabus not used | Its terms don't allow access to individual syllabi; a free student account only shows totals up to 2019. |
 | 11-21 | Prerequisites written inside Purdue's syllabus descriptions are shown on the Prerequisites tab | Purdue's catalog lists no prerequisites, so this fills a real gap for 7 of its 11 AI courses. |
+| 11-23 | Courses with no description are flagged "judged on title only", confidence at most 0.6 | A title alone can mislead; the flag shows which verdicts are less certain. |
+| 11-23 | Before changing a parser, re-parse every saved page of that platform and compare | Shows exactly which courses a fix changes (the Acalog label fix changed only the course it was meant to). |
 | — | Never generate a syllabus with an LLM when none is found | It would be invented data presented as a real syllabus. Missing sections are shown as "not found" instead. |
 
 ## Gaps
@@ -457,6 +468,15 @@ after its tests passed.
   weekly topics for 18 and instructors for 20.
 
 ### Data quality
+
+- **The AI definition and keywords are our own.** The trial brief says "AI-related courses" without defining
+  it, so the definition given to DeepSeek, the keyword lists and the 13 categories were written for this
+  project, not taken from cicmap or a published standard. No hand-labelled set measures how often the filter
+  is right. Borderline cases show the effect, for example Northeastern's MKTG 4606 (a data analytics
+  practicum) counts as AI at 0.7. Matching cicmap's own definition, or the AI topics in the ACM/IEEE CS2023
+  curriculum guidelines, would make it easier to defend.
+- **Categories are only labels.** Each AI course gets one category, shown in the CLI and UI, but nothing
+  groups or compares by it yet (for example a category breakdown per school on the Compare page).
 
 - **Textbooks with different titles aren't matched.** Middle Georgia State lists "ARTIFICIAL INTELLIGENCE
   (4TH 21 ed.)" and Purdue "Artificial Intelligence: A Modern Approach"; they are the same book but aren't
