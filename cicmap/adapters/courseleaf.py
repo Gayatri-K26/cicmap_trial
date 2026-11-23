@@ -24,7 +24,7 @@ LABEL_MAP = {
 @register
 class CourseLeafAdapter(CatalogAdapter):
     name = "courseleaf"
-    version = 2
+    version = 3
 
     def detect(self, url: str, html: str) -> float:
         low = html.lower()
@@ -122,7 +122,7 @@ class CourseLeafAdapter(CatalogAdapter):
                     if tm:
                         title = tm.group(1).rstrip(".")
 
-        desc_el = block.select_one(".courseblockdesc")
+        desc_el = block.select_one(".courseblockdesc, .cb_desc")  # .cb_desc: Northeastern
         description = None
         if desc_el:
             description = clean(desc_el.get_text(" "))

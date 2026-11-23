@@ -99,6 +99,15 @@ def test_courseleaf_course_drexel():
     assert c.restrictions
 
 
+def test_courseleaf_course_northeastern_cb_desc():
+    # Northeastern's catalog puts the description in <p class="cb_desc">, not .courseblockdesc
+    c = get_adapter("courseleaf").parse_course(CurriculumEntry(code="CS 4100"), "u",
+                                               read("courseleaf_northeastern_cs4100.xml"))
+    assert c.title == "Principles of Artificial Intelligence"
+    assert c.description.startswith("Introduces the fundamental problems")
+    assert c.prereq_text.startswith("DS 3000")
+
+
 def test_smartcatalog_program_kean():
     url = "https://kean.smartcatalogiq.com/en/2026-2027/undergraduate-catalog/x/artificial-intelligence-b-s/"
     a, why = select_adapter(url, read("smartcatalog_kean_program.html"))

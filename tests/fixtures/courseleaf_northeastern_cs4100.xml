@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<courseinfo>
+<course code="CS 4100">
+<![CDATA[
+<div class="courseblock">
+<p class="courseblocktitle noindent"><strong>CS&#160;4100.  Principles of Artificial Intelligence.  (4 Hours)</strong></p>
+<p class="cb_desc">Introduces the fundamental problems, theories, and algorithms of the artificial intelligence field. Explores the full breadth of the field, from classical methods to modern, datacentric approaches. Highlights the applications of logic, probability, and continuous mathematics to represent and solve problems in the artificial intelligence domain such as heuristic search, decision making under uncertainty, and machine learning. Includes written and programming assignments. Offers students an opportunity to apply concepts and algorithms from the course to artificial intelligence problems.  </p>
+<p class="courseblockextra noindent"><strong>Prerequisite(s): </strong><a href="/search/?P=DS%203000" title="DS&#160;3000" class="bubblelink code" onclick="return showCourse(this, 'DS 3000');">DS&#160;3000</a> with a minimum grade of D-  or  CIS 250M with a minimum grade of D-  or  (<a href="/search/?P=MATH%202331" title="MATH&#160;2331" class="bubblelink code" onclick="return showCourse(this, 'MATH 2331');">MATH&#160;2331</a> with a minimum grade of D- ;  <a href="/search/?P=MATH%203081" title="MATH&#160;3081" class="bubblelink code" onclick="return showCourse(this, 'MATH 3081');">MATH&#160;3081</a> with a minimum grade of D- )</p><p class="courseblockextra noindent"><strong>Attribute(s): </strong> NUpath Writing Intensive</p><br />
+</div>
+
+]]>
+</course>
+</courseinfo>
+
