@@ -131,22 +131,6 @@ def assess(text: str, code: str, course_title: Optional[str], url: str,
     return 0.75, "code_in_text"
 
 
-# --- one hop: a course page that links to its syllabus ------------------------------------------------
-
-LINK_WORDS = re.compile(r"syllab|course[\s_-]*(outline|info)", re.I)
-MAX_LINKS_PER_PAGE = 3
-LINKED_PENALTY = 0.05  # found one click away, not by search: a little less certain
-
-
-def syllabus_links(links: List[Tuple[str, str]], domain: str, page_url: str) -> List[str]:
-    """Links on a course page whose text or address says syllabus / course outline, on the school's site."""
-    out = []
-    for text, url in links:
-        if url != page_url and url not in out and LINK_WORDS.search(f"{text} {url}") and usable(url, domain):
-            out.append(url)
-    return out[:MAX_LINKS_PER_PAGE]
-
-
 def source_kind(url: str) -> str:
     """Instructor pages ('/~name/', '/homes/name/') vs department or office pages."""
     return "faculty" if re.search(r"/~|/homes/|/people/|/users/|/faculty/", url, re.I) else "department"
@@ -156,23 +140,9 @@ def discover(conn, institution: Optional[str] = None, progress=lambda m: None) -
     """Search, fetch, keep real syllabi, parse them deterministically and store them."""
     from . import documents, syllabi
 
-    counts = {"candidates": 0, "fetched": 0, "kept": 0, "linked": 0, "courses": set(), "removed": 0}
+    counts = {"candidates": 0, "fetched": 0, "kept": 0, "courses": set(), "removed": 0}
     found = candidates(conn, institution)
     kept_urls = set()
-    seeds = []  # pages about this course (code near the top), whose syllabus links are followed once
-
-    def keep(f, url, text, kind, verdict, extra=None):
-        doc = syllabi.parse_text(text)
-        if extra:
-            doc.setdefault("extra", {}).update(extra)
-        syllabi.save_document(conn, [f["course_id"]], url, source_kind(url), doc, verdict[0], verdict[1],
-                              source_type=kind)
-        conn.commit()
-        counts["kept"] += 1
-        kept_urls.add(url)
-        counts["courses"].add(f["course_id"])
-        progress(f"{f['institution']} {f['code']}: {url}")
-
     for f in found:
         if skip_url(f["url"]):
             continue
@@ -183,31 +153,17 @@ def discover(conn, institution: Optional[str] = None, progress=lambda m: None) -
             progress(f"skip {f['url']}: {type(e).__name__}")
             continue
         counts["fetched"] += 1
-        if kind == "html" and code_in(f["code"], f"{f['title']} {f['url']} {text[:2000]}"):
-            seeds.append(f)
         verdict = assess(text, f["code"], f["course_title"], f["url"], f["title"])
-        if verdict:
-            keep(f, f["url"], text, kind, verdict)
-
-    for f in seeds:  # one hop, never deeper
-        try:
-            links = syllabus_links(documents.fetch_links(conn, f["url"]), f["domain"], f["url"])
-        except Exception as e:
-            progress(f"skip links of {f['url']}: {type(e).__name__}")
+        if not verdict:
             continue
-        for url in links:
-            if url in kept_urls or skip_url(url):
-                continue
-            try:
-                text, kind = documents.fetch_text(conn, url)
-            except Exception as e:
-                progress(f"skip {url}: {type(e).__name__}")
-                continue
-            verdict = assess(text, f["code"], f["course_title"], url)
-            if verdict:
-                counts["linked"] += 1
-                keep(f, url, text, kind, (round(verdict[0] - LINKED_PENALTY, 2), "linked:" + verdict[1]),
-                     {"found_via": f["url"]})
+        doc = syllabi.parse_text(text)
+        syllabi.save_document(conn, [f["course_id"]], f["url"], source_kind(f["url"]), doc, verdict[0], verdict[1],
+                              source_type=kind)
+        conn.commit()
+        counts["kept"] += 1
+        kept_urls.add(f["url"])
+        counts["courses"].add(f["course_id"])
+        progress(f"{f['institution']} {f['code']}: {f['url']}")
     # Web documents stored earlier for these courses that no longer pass (rules tightened) are removed.
     course_ids = {f["course_id"] for f in found}
     stale = [r["id"] for r in conn.execute(

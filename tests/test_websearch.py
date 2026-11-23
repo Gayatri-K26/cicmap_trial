@@ -82,35 +82,3 @@ def test_discover_removes_documents_that_no_longer_pass():
     counts = websearch.discover(c)
     assert counts["removed"] == 1 and counts["kept"] == 0
     assert [r[0] for r in c.execute("SELECT source_kind FROM syllabi")] == ["catalog"]  # catalog untouched
-
-
-def test_syllabus_links_picks_syllabus_links_on_the_school_site():
-    links = [("Syllabus", "https://www.cs.drexel.edu/~ab/cs380/syllabus.pdf"),
-             ("Lecture 1 slides", "https://www.cs.drexel.edu/~ab/cs380/l1.pdf"),
-             ("Course outline", "https://www.cs.drexel.edu/~ab/cs380/outline.html"),
-             ("Syllabus", "https://www.other.edu/syllabus.pdf"),               # another school
-             ("Syllabus", "https://canvas.drexel.edu/courses/1/syllabus"),     # behind a login
-             ("Home", "https://www.cs.drexel.edu/~ab/cs380/")]                 # the page itself
-    assert websearch.syllabus_links(links, "drexel.edu", "https://www.cs.drexel.edu/~ab/cs380/") == [
-        "https://www.cs.drexel.edu/~ab/cs380/syllabus.pdf", "https://www.cs.drexel.edu/~ab/cs380/outline.html"]
-
-
-def test_course_home_page_leads_to_its_syllabus():
-    """Search finds the course home page (not a syllabus itself); its 'Syllabus' link is followed once."""
-    c = db.connect(Path(":memory:"))
-    c.execute("INSERT INTO institutions(id, name, domain) VALUES (1, 'Drexel University', 'catalog.drexel.edu')")
-    c.execute("INSERT INTO courses(id, institution_id, code, title, is_ai) "
-              "VALUES (1, 1, 'CS 380', 'Artificial Intelligence', 1)")
-    home, pdf = "https://www.cs.drexel.edu/~ab/cs380/", "https://www.cs.drexel.edu/~ab/cs380/syllabus.pdf"
-    rows = [(f"brave:{websearch.queries_for('drexel.edu', 'CS 380')[0]}",
-             json.dumps([{"url": home, "title": "CS 380 Artificial Intelligence"}]), "search"),
-            (home, "CS 380 Artificial Intelligence\nWelcome! Announcements below.", "text:html"),
-            (f"links:{home}", json.dumps([["Syllabus", pdf], ["Slides", home + "l1.pdf"]]), "links"),
-            (pdf, SYLLABUS, "text:pdf")]
-    c.executemany("INSERT INTO raw_pages(url, status_code, body, fetch_method) VALUES (?, 200, ?, ?)", rows)
-    counts = websearch.discover(c)
-    assert counts["kept"] == 1 and counts["linked"] == 1
-    s = c.execute("SELECT s.source_url, s.extra_json, sc.match_confidence, sc.match_method FROM syllabi s "
-                  "JOIN syllabus_courses sc ON sc.syllabus_id = s.id").fetchone()
-    assert s["source_url"] == pdf and json.loads(s["extra_json"])["found_via"] == home
-    assert s["match_confidence"] == 0.85 and s["match_method"] == "linked:code_and_title_in_text"
