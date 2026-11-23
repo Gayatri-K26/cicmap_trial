@@ -312,7 +312,14 @@ For each AI course:
 6. **Save it** with match certainty 0.9 if our course title also appears in the text, 0.75 if only the code
    does. The source kind is `faculty` if the address looks like a personal page (`/~name/`, `/homes/`,
    `/people/`), otherwise `department`.
-7. **Remove documents that no longer pass.** If the rules were tightened since a document was saved, running
+7. **Follow syllabus links one step.** A web page that is about the course (its code is near the top) but
+   isn't a syllabus itself is often the course's home page, with a "Syllabus" link. cicmap reads that page's
+   links once and follows up to 3 whose text or address says "syllabus" or "course outline", on the school's
+   own site, never deeper. A link that names this course's code goes first. On a page with more than 3 such
+   links (a list of every course's syllabus, like Purdue's semester course lists) only the links naming this
+   course are followed. The linked document goes through the same checks (step 4) and is saved with match
+   certainty 0.05 lower (0.85 / 0.7) and the page it was found on. This makes no new searches.
+8. **Remove documents that no longer pass.** If the rules were tightened since a document was saved, running
    the command again deletes it.
 
 #### Source 4: the DeepSeek pass (`cicmap syllabus llm`)
@@ -440,7 +447,7 @@ after its tests passed.
 | 11-19 | Use public Simple Syllabus libraries (Purdue, Middle Georgia State) | Real, current syllabi from one predictable source. Their robots.txt allows general crawlers. |
 | 11-19 | Skip Concourse (Capitol Tech, Harding) | Its robots.txt disallows all automated access. |
 | 11-19 | Skip Kean's and Miami's Simple Syllabus | Both need a login. |
-| 11-19 | Check robots.txt before fetching any syllabus page; never use the headless browser for syllabi | Respect what sites allow. The browser was acceptable for public catalog pages, not for getting around blocks on syllabus pages. |
+| 11-19 | Check robots.txt before fetching any syllabus page; never use the headless browser for documents found by search | Respect what sites allow. The browser is used for public pages that need JavaScript (catalogs, Simple Syllabus), not for getting around blocks. |
 | 11-19 | Brave Search limited to each school's domain, with three content checks | Open search returned other schools' courses; most domain results were degree maps and old catalogs. |
 | 11-20 | Rules first, DeepSeek only for empty sections, with every item checked against the text | Rules are predictable and free; DeepSeek reads messy layouts the rules can't, and the checks stop invented data. |
 | 11-20 | Grading weights kept only if they add up to about 100% | Caught a table counted twice (200%) and partial lists; also stops a grade scale ("A 90%") being read as weights. |
@@ -449,6 +456,8 @@ after its tests passed.
 | 11-21 | Prerequisites written inside Purdue's syllabus descriptions are shown on the Prerequisites tab | Purdue's catalog lists no prerequisites, so this fills a real gap for 7 of its 11 AI courses. |
 | 11-23 | Courses with no description are flagged "judged on title only", confidence at most 0.6 | A title alone can mislead; the flag shows which verdicts are less certain. |
 | 11-23 | Before changing a parser, re-parse every saved page of that platform and compare | Shows exactly which courses a fix changes (the Acalog label fix changed only the course it was meant to). |
+| 11-23 | Follow "syllabus" links one step from course pages found by search | Course home pages often link to the syllabus. On our 14 schools it found nothing new (see Gaps), but it costs no searches and helps other schools. |
+| 11-23 | Don't follow links from program pages to other requirement pages | On our 14 programs those links lead only to general education, university core and other degrees, never AI elective lists. |
 | — | Never generate a syllabus with an LLM when none is found | It would be invented data presented as a real syllabus. Missing sections are shown as "not found" instead. |
 
 ## Gaps
@@ -467,6 +476,11 @@ after its tests passed.
 - **Uneven sections.** Of the 175 AI courses in the database, grading is known for 25, textbooks for 23,
   weekly topics for 18 and instructors for 20.
 
+- **Following syllabus links found nothing new here.** Of 72 course pages that search found, 5 had a
+  "syllabus" link: one led to a syllabus search had already found, the rest to old index pages, a deleted
+  Purdue page and a registration-system stub. Miami's site now redirects automated requests to a "sorry"
+  page, so its pages can't be re-read (its earlier syllabi stay saved).
+
 ### Data quality
 
 - **The AI definition and keywords are our own.** The trial brief says "AI-related courses" without defining
@@ -483,6 +497,9 @@ after its tests passed.
   matched. Matching on ISBN, where a syllabus gives one, would fix most cases.
 - **Purdue's prerequisites from syllabi are shown as text, not links.** They appear on the Prerequisites tab
   but aren't turned into course-to-course links, so they don't show under "Needed for".
+- **Curricula split across pages aren't followed.** If a future program lists some AI courses on a separate
+  page (an "approved electives" list), only the program page is read. None of our 14 programs do this (Miami's
+  full course list is the exception, and it is followed). Rule-based parsers would need to report such links.
 - **Missing program details:** Acalog pages and BYU don't name the college, and Hallmark lists no credits.
 - **The content checks were tuned on a small sample.** The 15-course limit and the 3-word minimum fit the
   pages seen so far; schools with different page styles could need adjusting.
@@ -503,6 +520,5 @@ after its tests passed.
 
 ### Open questions and housekeeping
 
-- **14 or 15 programs?** The brief mentions 15 pages; the sheet has 14.
 - **How does cicmap handle courses with no public syllabus** (catalog only, collected by hand, or a dataset)?
 - **API keys:** the DeepSeek and Brave keys were shared in chat and should be replaced after the trial.
